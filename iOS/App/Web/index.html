@@ -13769,9 +13769,9 @@ const DT_SRC=`(?:(20\\d\\d)[-/.年]\\s*)?(?:(\\d{1,2})[-/.月]\\s*(\\d{1,2})日?
 function parseSaleTime(raw,now=Date.now()){const t=(raw||'').replace(/https?:\/\/\S+/gi,' ');
 const RE=new RegExp(DT_SRC,'g');
 const bj=new Date(now+8*36e5);
-for(const m of t.matchAll(RE)){const a=nearest(t.slice(Math.max(0,m.index-12),m.index),SALE_WORD,true),b=nearest(t.slice(m.index+m[0].length,m.index+m[0].length+10),SALE_WORD,false);
+for(const m of t.matchAll(RE)){const glued=/^\s*(开售|开抢|开票|发售|开卖)(?!时间)/.test(t.slice(m.index+m[0].length));const a=nearest(t.slice(Math.max(0,m.index-12),m.index),SALE_WORD,true),b=nearest(t.slice(m.index+m[0].length,m.index+m[0].length+10),SALE_WORD,false);
 const d=[a,b].filter(x=>x!=null);if(!d.length)continue;const ds=Math.min(...d);
-const x=[nearest(t.slice(Math.max(0,m.index-12),m.index),NOT_SALE_WORD,true),nearest(t.slice(m.index+m[0].length,m.index+m[0].length+10),NOT_SALE_WORD,false)].filter(v=>v!=null);if(x.length&&Math.min(...x)<=ds)continue;
+const x=[nearest(t.slice(Math.max(0,m.index-12),m.index),NOT_SALE_WORD,true),nearest(t.slice(m.index+m[0].length,m.index+m[0].length+10),NOT_SALE_WORD,false)].filter(v=>v!=null);if(!glued&&x.length&&Math.min(...x)<=ds)continue;
 let h=+m[6],mi=m[7]!=null?+m[7]:m[9]!=null?+m[9]:/点半/.test(m[0])?30:0,sc=m[8]!=null?+m[8]:0;
 if(/下午|晚上/.test(m[5]||'')&&h<12)h+=12;if(m[5]==='中午'&&h<11)h+=12;if(h>23||mi>59||sc>59)continue;
 let y,mo,da;if(m[4]){const k={今天:0,今日:0,明天:1,明日:1,后天:2}[m[4]],q=new Date(Date.UTC(bj.getUTCFullYear(),bj.getUTCMonth(),bj.getUTCDate()+k));y=q.getUTCFullYear();mo=q.getUTCMonth()+1;da=q.getUTCDate()}else{y=m[1]?+m[1]:bj.getUTCFullYear();mo=+m[2];da=+m[3]}
