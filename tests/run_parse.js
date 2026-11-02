@@ -7,5 +7,5 @@ await p.goto('file://'+path.join(__dirname,'../iOS/App/Web/index.html'));
 await p.waitForFunction(()=>typeof parseSaleTime==='function');
 const now=Date.UTC(2026,9,31,16,0,0);
 const got=await p.evaluate(([cs,now])=>cs.map(c=>{const a=parseSaleTime(c.text,now);if(a==null)return null;const d=new Date(a+8*36e5),z=n=>String(n).padStart(2,'0');return `${z(d.getUTCMonth()+1)}-${z(d.getUTCDate())} ${z(d.getUTCHours())}:${z(d.getUTCMinutes())}`}),[cases,now]);
-let bad=0;cases.forEach((c,i)=>{const ok=got[i]===c.want;if(!ok)bad++;console.log(`${ok?'通过':'不通过'} | ${c.text} | 应得 ${c.want||'读不出'} | 实得 ${got[i]||'读不出'} | ${c.from}`)});
+let bad=0;cases.forEach((c,i)=>{const ok=c.want&&c.want.any?c.want.any.includes(got[i]):got[i]===c.want;if(!ok)bad++;console.log(`${ok?'通过':'不通过'} | ${c.text} | 应得 ${c.want&&c.want.any?c.want.any.map(x=>x||'读不出').join(' 或 '):c.want||'读不出'} | 实得 ${got[i]||'读不出'} | ${c.from}`)});
 console.log(`\n共 ${cases.length} 条，不通过 ${bad} 条；JS 报错 ${errs.length} 个`,errs);await b.close();process.exit(bad||errs.length?1:0)})();

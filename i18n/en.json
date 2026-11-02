@@ -1473,7 +1473,7 @@
 "推送通知": "Push notifications",
 "推送通知被拒绝，换手机后的同步会慢一些": "Push notifications denied; syncing after switching phones will be slower",
 "还没有开启推送通知，开启后同步更及时": "Push notifications aren’t on yet; turn them on for faster syncing",
-"{}日导出": "Exported {M0} {1}",
+"{}日导出": "Exported on day {0}",
 "还没导出过": "Never exported",
 "手机本地": "On this phone",
 "{} 天记录": "{0} days of records",
