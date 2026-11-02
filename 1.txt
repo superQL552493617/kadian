@@ -1,0 +1,22 @@
+url=https://m.damai.cn/shows/item.html?itemId=1089011559335 code=200 size=15342
+请求: https://m.damai.cn/shows/item.html?itemId=1089011559335
+title: 商品详情
+script 数量: 50
+可见文字长度: 6
+可见文字开头:  商品详情 
+开售: 0 处 
+开抢: 0 处 
+开票: 0 处 
+预售: 0 处 
+sellStartTime: 0 处 
+sellTime: 0 处 
+saleTime: 0 处 
+startTime: 0 处 
+itemName: 0 处 
+演出时间: 0 处 
+滑块: 0 处 
+验证: 0 处 
+login: 0 处 
+登录: 0 处 
+punish: 0 处 
+x5sec: 0 处 
