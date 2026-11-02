@@ -1,0 +1,33 @@
+name: 上架资料（App Store Connect）
+on:
+  push:
+    branches: [main]
+    paths: [ci/asc.txt]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: 解密密钥
+        env:
+          PASS: ${{ secrets.SIGNING_PASSPHRASE }}
+          ASC_B64: ${{ secrets.ASC_KEY_ENC_B64 }}
+          DIST_B64: ${{ secrets.DIST_KEY_ENC_B64 }}
+        run: source ci/decrypt.sh
+      - name: 运行
+        run: |
+          pip install -q pyjwt cryptography requests
+          mkdir -p /tmp/log
+          python3 ci/asc_release.py "$(head -1 ci/asc.txt)" 2>&1 | tee /tmp/log/out.txt
+      - name: 保存日志
+        if: always()
+        run: |
+          mkdir -p /tmp/log && cd /tmp/log
+          echo "$GITHUB_SHA" > sha.txt
+          git init -q -b ci-log-asc; git config user.name ci; git config user.email ci@users.noreply.github.com
+          git add -A && git commit -qm "log $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" ci-log-asc

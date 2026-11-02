@@ -1,0 +1,4 @@
+"CFBundleDisplayName" = "卡點";
+"NSFaceIDUsageDescription" = "用Face ID 解鎖，保護你的記錄";
+"NSPhotoLibraryUsageDescription" = "選擇照片作為頭像或圖示";
+"NSCameraUsageDescription" = "拍照作為頭像或圖示";

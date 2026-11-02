@@ -1,0 +1,4 @@
+iOS/*.xcodeproj
+iOS/build/
+.DS_Store
+__pycache__/

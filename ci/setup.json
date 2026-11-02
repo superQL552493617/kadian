@@ -1,0 +1,9 @@
+{
+ "bundleId": "site.xiaomanhabit.kadian",
+ "name": "OnCue",
+ "profilePrefix": "AppStore",
+ "createCertificate": false,
+ "profiles": false,
+ "run": 1,
+ "certificateId": "NN84P26CZ4"
+}

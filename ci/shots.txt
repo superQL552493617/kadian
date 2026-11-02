@@ -1,0 +1,4 @@
+# 每行：名字|外观(light/dark)|启动参数|等待秒数   （-shotJS 后面是 base64 的网页脚本，页面加载后执行）
+home|light|-AppleLanguages (zh-Hans)|10
+home-dark|dark|-AppleLanguages (zh-Hans)|10
+home-en|light|-AppleLanguages (en)|10

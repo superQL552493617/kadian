@@ -1,0 +1,33 @@
+name: 签名准备（注册 Bundle ID、创建描述文件）
+# 触发：修改 ci/setup.json 并推送。先 createCertificate=false、profiles=false 只注册 Bundle ID；
+# 在开发者网站配好 App Group 后，把 profiles 改成 true、run 加 1 再推一次，生成描述文件。
+on:
+  push:
+    branches: [main]
+    paths: [ci/setup.json]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 解密密钥
+        env:
+          PASS: ${{ secrets.SIGNING_PASSPHRASE }}
+          ASC_B64: ${{ secrets.ASC_KEY_ENC_B64 }}
+          DIST_B64: ${{ secrets.DIST_KEY_ENC_B64 }}
+        run: source ci/decrypt.sh
+      - name: 调用 App Store Connect
+        run: |
+          pip install -q pyjwt cryptography
+          python3 ci/asc.py /tmp/out 2>&1 | tee /tmp/run.log; mkdir -p /tmp/out; cp /tmp/run.log /tmp/out/ || true
+      - name: 保存日志
+        if: always()
+        run: |
+          mkdir -p /tmp/out && cd /tmp/out
+          echo "$GITHUB_SHA" > sha.txt
+          git init -q -b ci-setup; git config user.name ci; git config user.email ci@users.noreply.github.com
+          git add -A && git commit -qm "log $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" ci-setup

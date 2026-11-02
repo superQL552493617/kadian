@@ -1,0 +1,102 @@
+# 由 tools/render.py 根据 app.json 生成，不要手改
+name: App
+options:
+  bundleIdPrefix: site.xiaomanhabit
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  developmentLanguage: zh-Hans
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: FUWHR5TSWG
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_PREVIEWS: YES
+targets:
+  App:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+      - path: Shared
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: 卡点
+        # 系统语言不是中文或英文时（日文、韩文等），权限说明等用英文
+        CFBundleDevelopmentRegion: en
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen:
+          UIColorName: LaunchPaper
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIRequiresFullScreen: true
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        CFBundleURLTypes:
+          - CFBundleURLName: site.xiaomanhabit.kadian
+            CFBundleURLSchemes: [kadian]
+        ITSAppUsesNonExemptEncryption: false
+        NSFaceIDUsageDescription: 用面容 ID 解锁，保护你的记录
+        NSPhotoLibraryUsageDescription: 选择照片作为头像或图标
+        NSCameraUsageDescription: 拍照作为头像或图标
+        UIAppFonts:
+          - xm_butter.ttf
+          - xm_cute.ttf
+          - xm_kai.ttf
+          - xm_kose.ttf
+          - xm_kuaile.ttf
+          - xm_pixel.ttf
+          - xm_round.ttf
+    entitlements:
+      path: App/App.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.site.xiaomanhabit.kadian
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: site.xiaomanhabit.kadian
+        PRODUCT_NAME: App
+        TARGETED_DEVICE_FAMILY: "1"   # 只支持 iPhone（不用提供 iPad 截图）
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: AppStore site.xiaomanhabit.kadian
+    dependencies:
+      - target: AppWidget
+  AppWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget
+      - path: Shared
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: 卡点
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Widget/AppWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.site.xiaomanhabit.kadian
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: site.xiaomanhabit.kadian.widget
+        TARGETED_DEVICE_FAMILY: "1"
+        SKIP_INSTALL: YES
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: AppStore site.xiaomanhabit.kadian.widget

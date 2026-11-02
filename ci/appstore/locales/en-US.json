@@ -1,0 +1,13 @@
+{
+ "name": "TODO name",
+ "subtitle": "TODO subtitle",
+ "keywords": "TODO keywords",
+ "promotionalText": "TODO promotionalText",
+ "whatsNew": "TODO whatsNew",
+ "description": "TODO description",
+ "privacyPolicyUrl": "{PAGES}en/privacy.html",
+ "supportUrl": "{PAGES}en/",
+ "marketingUrl": "{PAGES}en/",
+ "iap": {},
+ "group": "Premium"
+}

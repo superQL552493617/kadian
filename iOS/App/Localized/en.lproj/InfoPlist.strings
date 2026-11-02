@@ -1,0 +1,4 @@
+"CFBundleDisplayName" = "OnCue";
+"NSFaceIDUsageDescription" = "Use Face ID to unlock and protect your records";
+"NSPhotoLibraryUsageDescription" = "Choose a photo for your avatar or an icon";
+"NSCameraUsageDescription" = "Take a photo for your avatar or an icon";

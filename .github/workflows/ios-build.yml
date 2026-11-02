@@ -1,0 +1,38 @@
+name: iOS 编译检查
+on:
+  # 只在 ci/build.txt 变化或手动点击时编译（私有仓库省 macOS 分钟数）
+  push:
+    branches: [main]
+    paths: [ci/build.txt]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: 选择最新 Xcode
+        run: |
+          X=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          sudo xcode-select -s "$X"; xcodebuild -version
+      - name: 生成工程
+        working-directory: iOS
+        run: brew install xcodegen && xcodegen generate
+      - name: 编译（模拟器，不签名）
+        working-directory: iOS
+        run: |
+          set -o pipefail
+          xcodebuild -project App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log | grep -E "error:|BUILD (SUCCEEDED|FAILED)" || true
+          grep -q "BUILD SUCCEEDED" build.log
+      - name: 保存错误
+        if: always()
+        working-directory: iOS
+        run: |
+          mkdir -p /tmp/cilog; grep -E "error:" build.log | sort -u | head -200 > /tmp/cilog/errors.txt || true; tail -80 build.log > /tmp/cilog/tail.txt || true
+          cd /tmp/cilog; echo "$GITHUB_SHA ${{ job.status }}" > sha.txt
+          git init -q -b ci-log; git config user.name ci; git config user.email ci@users.noreply.github.com
+          git add -A && git commit -qm "build $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" ci-log

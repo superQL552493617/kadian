@@ -1,0 +1,13 @@
+{
+ "name": "小满模板",
+ "subtitle": "一句话介绍",
+ "keywords": "关键词1,关键词2",
+ "promotionalText": "推广文本（可随时改，不用审核）",
+ "whatsNew": "",
+ "description": "App 描述……\n\n会员说明：\n· 年度、月度会员为自动续期订阅，到期前 24 小时内自动续费，可随时在「设置 → Apple ID → 订阅」中取消；永久会员为一次性购买。\n· 用户协议：{PAGES}terms.html\n· 隐私政策：{PAGES}privacy.html",
+ "privacyPolicyUrl": "{PAGES}privacy.html",
+ "supportUrl": "{PAGES}",
+ "marketingUrl": "{PAGES}",
+ "iap": {},
+ "group": "会员"
+}

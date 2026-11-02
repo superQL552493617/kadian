@@ -1,0 +1,81 @@
+{
+  "_说明": "新 App 只改这个文件，然后运行 python3 tools/render.py。所有身份信息（名字、Bundle ID、商品 ID、网址）都从这里生成。",
+  "slug": "kadian",
+  "name": "卡点",
+  "nameEn": "OnCue",
+  "nameHant": "卡點",
+  "subtitle": "毫秒对时，抢票卡点不慌",
+  "bundleId": "site.xiaomanhabit.kadian",
+  "appGroup": "group.site.xiaomanhabit.kadian",
+  "urlScheme": "kadian",
+  "teamId": "FUWHR5TSWG",
+  "ascKeyId": "G235VJ97RJ",
+  "ascIssuerId": "984b2449-6ea9-47a4-8956-c836f0aa5f92",
+  "certificateId": "NN84P26CZ4",
+  "developer": "lang qin",
+  "copyright": "2026 lang qin",
+  "icp": "",
+  "feedbackForm": "",
+  "pagesBase": "https://superql552493617.github.io/kadian/",
+  "marketingVersion": "1.0.0",
+  "vip": {
+    "enabled": false,
+    "groupName": "会员",
+    "groupNameEn": "Premium",
+    "reviewNote": "本 App 全部功能免费，没有内购。",
+    "year": {
+      "id": "site.xiaomanhabit.kadian.vip.year",
+      "cny": "18",
+      "usd": "2.90",
+      "trial": "THREE_DAYS",
+      "zh": [
+        "年度会员",
+        "按年订阅，解锁全部会员功能"
+      ],
+      "en": [
+        "Yearly",
+        "Unlock all premium features, billed yearly"
+      ]
+    },
+    "month": {
+      "id": "site.xiaomanhabit.kadian.vip.month",
+      "cny": "3.5",
+      "usd": "1.90",
+      "zh": [
+        "月度会员",
+        "按月订阅，解锁全部会员功能"
+      ],
+      "en": [
+        "Monthly",
+        "Unlock all premium features, billed monthly"
+      ]
+    },
+    "life": {
+      "id": "site.xiaomanhabit.kadian.vip.life",
+      "cny": "35",
+      "usd": "9.90",
+      "zh": [
+        "永久会员",
+        "一次购买，永久解锁全部会员功能"
+      ],
+      "en": [
+        "Lifetime",
+        "One-time purchase, all premium features forever"
+      ]
+    }
+  },
+  "splashQuote": "准点，就是最好的运气。",
+  "splashQuoteEn": "Right on time is the best luck.",
+  "permissions": {
+    "faceId": "用面容 ID 解锁，保护你的记录",
+    "faceIdEn": "Use Face ID to unlock and protect your records",
+    "photos": "选择照片作为头像或图标",
+    "photosEn": "Choose a photo for your avatar or an icon",
+    "camera": "拍照作为头像或图标",
+    "cameraEn": "Take a photo for your avatar or an icon"
+  },
+  "appStoreId": "",
+  "lookupCountry": "cn",
+  "altIcons": [],
+  "reviewNotes": "这是一款抢购卡点用的时钟工具，不需要注册登录，没有广告，没有内购，所有数据只保存在用户手机上。\n时间来自公开的网络授时接口（如国家授时中心 NTP、各平台公开的服务器时间接口），只读取时间，不读取任何用户信息。\n悬浮时钟使用系统画中画功能显示；灵动岛倒计时使用实时活动。\n首次打开会先请用户同意用户协议和隐私政策，然后是新手引导，可以直接点「跳过」。"
+}
