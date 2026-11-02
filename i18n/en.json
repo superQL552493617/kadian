@@ -2403,5 +2403,12 @@
 "模拟从链接读到标题和时间": "Simulate reading from link",
 "模拟读到的活动（预览）": "Simulated event (preview)",
 "点「抢购日程」旁边的「+」，粘贴链接或扫码，会尽量自动带出名称和开抢时间，请和平台核对，也可以手动改。": "Tap + next to Sales and paste a link or scan a code. We try to fill in the name and sale time. Check them against the platform, and edit if needed.",
-"粘贴链接或扫码，核对名称和开抢时间，到点前提醒你。": "Paste a link or scan a code, check the name and sale time, and we'll remind you."
+"粘贴链接或扫码，核对名称和开抢时间，到点前提醒你。": "Paste a link or scan a code, check the name and sale time, and we'll remind you.",
+"打开时间": "Open at",
+"开抢前 10 秒": "10 s before",
+"开抢前 30 秒": "30 s before",
+"开抢前 60 秒": "60 s before",
+"快开抢了：{}": "Almost time: {0}",
+"点一下打开抢购页": "Tap to open the sale page",
+"可以选开抢前 10、30 或 60 秒打开。要停在卡点里才会自动打开；不在卡点时会发通知，点一下打开。": "Choose to open 10, 30 or 60 s before. It opens only while OnCue is on screen. Otherwise you get a notification to tap."
 }
