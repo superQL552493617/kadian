@@ -2,3 +2,4 @@
 home|light|-AppleLanguages (zh-Hans)|10
 home-dark|dark|-AppleLanguages (zh-Hans)|10
 home-en|light|-AppleLanguages (en)|10
+# KD-005 第一个包的启动检查 1793611189
