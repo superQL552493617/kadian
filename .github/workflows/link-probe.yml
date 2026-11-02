@@ -1,0 +1,44 @@
+name: 链接摸底
+# 改 ci/probe.txt 后运行：每行一个公开网址，抓一次页面，看里面有没有标题和开抢时间。结果在 ci-log-probe 分支。
+on:
+  push:
+    branches: [main]
+    paths: [ci/probe.txt]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: 抓页面
+        run: |
+          mkdir -p out
+          UA='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'
+          n=0
+          grep -v '^#' ci/probe.txt | grep . | while read -r url; do
+            n=$((n+1))
+            curl -sS -L --max-time 25 -A "$UA" -H 'Accept-Language: zh-CN,zh;q=0.9' -D "out/$n.headers" -o "out/$n.html" -w "url=%{url_effective} code=%{http_code} size=%{size_download}\n" "$url" > "out/$n.txt" 2>&1 || true
+            python3 - "$n" "$url" >> "out/$n.txt" <<'PY'
+          import re,sys
+          n,url=sys.argv[1:3]
+          try: s=open(f'out/{n}.html',encoding='utf8',errors='replace').read()
+          except Exception as e: print('读不到',e); raise SystemExit
+          print('请求:',url)
+          t=re.search(r'<title[^>]*>(.*?)</title>',s,re.S|re.I); print('title:',t.group(1).strip()[:200] if t else None)
+          for m in re.findall(r'<meta[^>]+(?:og:title|name="description"|name="keywords")[^>]*>',s,re.I)[:5]: print('meta:',m[:300])
+          print('script 数量:',len(re.findall(r'<script',s,re.I)))
+          text=re.sub(r'<script.*?</script>|<style.*?</style>|<[^>]+>',' ',s,flags=re.S|re.I); text=re.sub(r'\s+',' ',text)
+          print('可见文字长度:',len(text)); print('可见文字开头:',text[:400])
+          for w in ['开售','开抢','开票','预售','sellStartTime','sellTime','saleTime','startTime','itemName','演出时间','滑块','验证','login','登录','punish','x5sec']:
+              idx=[m.start() for m in re.finditer(w,s)]
+              print(f'{w}: {len(idx)} 处',(repr(s[max(0,idx[0]-40):idx[0]+80]) if idx else ''))
+          PY
+          done
+          rm -f out/*.html
+      - name: 存结果
+        run: |
+          git config user.name ci; git config user.email ci@users.noreply.github.com
+          cp -r out /tmp/out; git checkout --orphan ci-log-probe; git rm -rfq . ; cp -r /tmp/out/* .; git add -A; git commit -qm "probe $(date -u +%FT%TZ)"; git push -f origin ci-log-probe
