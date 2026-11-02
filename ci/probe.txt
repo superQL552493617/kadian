@@ -1,2 +1,0 @@
-# 每行一个公开网址，改完推送就抓一次
-https://m.damai.cn/shows/item.html?itemId=1089011559335
