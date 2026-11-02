@@ -4,6 +4,6 @@
  "profilePrefix": "AppStore",
  "createCertificate": false,
  "profiles": false,
- "run": 1,
+ "run": 2,
  "certificateId": "NN84P26CZ4"
 }
