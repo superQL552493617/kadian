@@ -51,6 +51,16 @@ enum L10n {
         "点一下打开 App 记录今天。": ["Tap to open the app and record today.", "點一下打開 App 記錄今天。"],
         "笔记": ["Notes", "筆記"],
         "打开": ["Open", "打開"],
+        "下一场": ["Next", "下一場"],
+        "添加一场抢购": ["Add a sale", "新增一場搶購"],
+        "点一下打开卡点": ["Tap to open OnCue", "點一下打開卡點"],
+        "已开抢": ["Started", "已開搶"],
+        "显示下一场的名称和倒计时。": ["Shows the next sale and its countdown.", "顯示下一場的名稱和倒數。"],
+        "正在打开相机…": ["Opening the camera…", "正在打開相機…"],
+        "把二维码放进框里": ["Put the QR code in the frame", "把 QR Code 放進框裡"],
+        "从相册选": ["Choose from Photos", "從相簿選"],
+        "相机没打开。可以从相册选，或去系统设置打开相机权限。": ["The camera isn’t on. Choose from Photos, or allow camera access in Settings.", "相機沒打開。可以從相簿選，或去系統設定打開相機權限。"],
+        "这张图里没找到二维码": ["No QR code found in this image", "這張圖裡沒找到 QR Code"],
     ]
 }
 

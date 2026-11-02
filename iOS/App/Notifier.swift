@@ -9,10 +9,12 @@ enum SFX {
     private static var players: [Int: AVAudioPlayer] = [:]
     private static var sessionReady = false
     private static var tonePlayer: AVAudioPlayer?
+    /// 悬浮窗开着时音频设置归它管，这里不改，否则画中画可能被停掉
+    static var sessionLocked = false
 
     /// 完成音效 sfx_<n>.wav：跟随静音键，不打断别的 App 的音乐
     static func play(_ n: Int) {
-        if !sessionReady {
+        if !sessionReady && !sessionLocked {
             try? AVAudioSession.sharedInstance().setCategory(.ambient, options: [.mixWithOthers])
             try? AVAudioSession.sharedInstance().setActive(true)
             sessionReady = true
@@ -29,9 +31,11 @@ enum SFX {
 
     /// 试听提醒铃声 tone_<n>.wav（静音键打开时也能听到）
     static func playTone(_ n: Int) {
-        try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
-        try? AVAudioSession.sharedInstance().setActive(true)
-        sessionReady = false
+        if !sessionLocked {
+            try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
+            try? AVAudioSession.sharedInstance().setActive(true)
+            sessionReady = false
+        }
         guard let url = Bundle.main.url(forResource: "tone_\(n)", withExtension: "wav"), let p = try? AVAudioPlayer(contentsOf: url) else { return }
         tonePlayer?.stop(); p.volume = 1; p.play(); tonePlayer = p
     }
@@ -55,7 +59,7 @@ final class Notifier {
         return st.authorizationStatus == .authorized || st.authorizationStatus == .provisional || st.authorizationStatus == .ephemeral
     }
 
-    /// items：[{id, title, body, h, m, weekday?(1=周日…7=周六), date?("2026-10-26"), tone?(1…10), route?}]
+    /// items：[{id, title, body, h, m, s?(秒，卡点的提醒要到秒), weekday?(1=周日…7=周六), date?("2026-10-26"), tone?(1…10), route?}]
     /// 有 date 的是一次性提醒；有 weekday 的是每周重复；都没有就是每天重复。iOS 最多保留 64 条，这里只排 60 条。
     func schedule(_ items: [[String: Any]]) async {
         center.removeAllPendingNotificationRequests()
@@ -70,6 +74,7 @@ final class Notifier {
             } else { ct.sound = .default }
             var dc = DateComponents()
             dc.hour = h; dc.minute = m
+            if let sec = (it["s"] as? NSNumber)?.intValue { dc.second = sec }
             var repeats = true
             if let d = it["date"] as? String {
                 let p = d.split(separator: "-").compactMap { Int($0) }

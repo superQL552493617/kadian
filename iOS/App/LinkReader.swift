@@ -1,0 +1,139 @@
+import Foundation
+import UIKit
+import WebKit
+
+// MARK: - 读取用户粘贴的这一个链接（cmd:'linkinfo'）
+// 老板决定（决策记录 2026-11-01、11-02）：只在用户粘贴或扫码时，由用户手机打开这一个公开页面，取标题和文字。
+// 做法：隐藏的网页视图，和用户自己用手机打开这个页面一样，页面自己的脚本跑完后读屏幕上的文字。
+// 不登录、不带 cookie（用一次性的数据空间）、不定时、不批量、不自己拼接口或签名、不伪装浏览器。
+// 碰到验证码或登录页直接放弃，不绕过，走手动填。时间由网页的 parseSaleTime 判断，这里不猜。
+
+@MainActor
+final class LinkReader: NSObject, WKNavigationDelegate {
+    private static var current: LinkReader?
+
+    /// 只读这些平台的页面。其他网址不读，走手动填
+    private static let hosts = ["damai.cn", "taobao.com", "tmall.com", "tb.cn", "jd.com", "3.cn", "maoyan.com",
+                                "pinduoduo.com", "yangkeduo.com", "meituan.com", "12306.cn"]
+    private static func allowed(_ host: String?) -> Bool {
+        guard let h = host?.lowercased() else { return false }
+        return hosts.contains { h == $0 || h.hasSuffix("." + $0) }
+    }
+
+    static func read(_ raw: String, done: @escaping ([String: Any]) -> Void) {
+        current?.finish(["cancelled": true])
+        guard var comp = URLComponents(string: raw), let sch = comp.scheme?.lowercased(), sch == "https" || sch == "http" else {
+            done(["unsupported": true]); return
+        }
+        guard allowed(comp.host) else {
+            Diag.add("读链接 \(comp.host ?? "?") 不在平台名单，没读")
+            done(["unsupported": true]); return
+        }
+        comp.scheme = "https"
+        guard let url = comp.url else { done(["unsupported": true]); return }
+        let r = LinkReader(done: done)
+        current = r
+        r.start(url)
+    }
+
+    private let done: ([String: Any]) -> Void
+    private var web: WKWebView?
+    private var began = Date()
+    private var finished = false
+    private var last: [String: Any] = [:]
+    private var host = ""
+
+    private init(done: @escaping ([String: Any]) -> Void) { self.done = done }
+
+    private func start(_ url: URL) {
+        host = url.host ?? ""
+        began = Date()
+        let cfg = WKWebViewConfiguration()
+        cfg.websiteDataStore = .nonPersistent()
+        cfg.mediaTypesRequiringUserActionForPlayback = .all
+        let wv = WKWebView(frame: CGRect(x: 0, y: 0, width: 390, height: 844), configuration: cfg)
+        wv.navigationDelegate = self
+        wv.isUserInteractionEnabled = false
+        wv.alpha = 0.01
+        if let win = UIApplication.topViewController()?.view.window { win.insertSubview(wv, at: 0) }
+        web = wv
+        wv.load(URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 8))
+        poll()
+    }
+
+    private static let snapshot = """
+    (function(){var b=document.body,t=b?b.innerText:'',og=document.querySelector('meta[property="og:title"]'),best='',bs=0;
+    var els=document.querySelectorAll('h1,h2,h3,[class*=title],[class*=Title],[class*=name],[class*=Name]');
+    for(var i=0;i<els.length&&i<200;i++){var e=els[i],s=(e.innerText||'').trim();if(s.length<4||s.length>80||s.indexOf('\\n')>=0)continue;
+    var r=e.getBoundingClientRect();if(r.height===0||r.top>innerHeight)continue;var f=parseFloat(getComputedStyle(e).fontSize)||0;if(f>bs){bs=f;best=s}}
+    return JSON.stringify({title:document.title||'',og:og?(og.content||''):'',head:best,text:t.slice(0,8000),href:location.href})})()
+    """
+
+    private func poll() {
+        guard !finished, let wv = web else { return }
+        wv.evaluateJavaScript(Self.snapshot) { [weak self] res, _ in
+            guard let self, !self.finished else { return }
+            if let s = res as? String, let d = s.data(using: .utf8), let j = try? JSONSerialization.jsonObject(with: d) as? [String: Any] {
+                self.last = j
+                let text = j["text"] as? String ?? "", href = j["href"] as? String ?? ""
+                if Self.looksBlocked(text, href) {
+                    self.finish(self.result(blocked: true)); return
+                }
+                if Self.hasSaleTime(text) { self.finish(self.result(blocked: false)); return }
+            }
+            if Date().timeIntervalSince(self.began) > 9 { self.finish(self.result(blocked: false)); return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.poll() }
+        }
+    }
+
+    private static func looksBlocked(_ text: String, _ href: String) -> Bool {
+        if href.range(of: "login|punish|captcha|baxia|verify", options: [.regularExpression, .caseInsensitive]) != nil { return true }
+        return text.count < 300 && text.range(of: "滑块|验证码|安全验证|请完成验证|访问受限|请登录|访问被拒绝", options: .regularExpression) != nil
+    }
+
+    /// 页面上已经有「开抢 + 日期 + 时分」，不用再等
+    private static func hasSaleTime(_ t: String) -> Bool {
+        t.range(of: "开抢|开售|开票|开卖|预售|发售|抢购", options: .regularExpression) != nil
+            && t.range(of: "\\d{1,2}\\s*[月/.\\-]\\s*\\d{1,2}", options: .regularExpression) != nil
+            && t.range(of: "\\d{1,2}[:：]\\d{2}", options: .regularExpression) != nil
+    }
+
+    private func result(blocked: Bool) -> [String: Any] {
+        let head = last["head"] as? String ?? "", og = last["og"] as? String ?? "", title = last["title"] as? String ?? ""
+        let text = last["text"] as? String ?? ""
+        return ["head": head, "og": og, "title": title, "text": blocked ? "" : text, "blocked": blocked]
+    }
+
+    private func finish(_ r: [String: Any]) {
+        guard !finished else { return }
+        finished = true
+        let ms = Int(Date().timeIntervalSince(began) * 1000)
+        let t = last["text"] as? String ?? ""
+        var near = ""
+        if let rg = t.range(of: "开抢|开售|开票|开卖|预售|发售", options: .regularExpression) {
+            let a = t.index(rg.lowerBound, offsetBy: -30, limitedBy: t.startIndex) ?? t.startIndex
+            let b = t.index(rg.upperBound, offsetBy: 30, limitedBy: t.endIndex) ?? t.endIndex
+            near = String(t[a..<b]).replacingOccurrences(of: "\n", with: " ")
+        }
+        Diag.add("读链接 \(host) \(ms)ms 被拦\(r["blocked"] as? Bool ?? false) 标题「\(last["title"] as? String ?? "")」大字「\(last["head"] as? String ?? "")」文字\(t.count)字 开抢附近「\(near)」")
+        web?.stopLoading()
+        web?.navigationDelegate = nil
+        web?.removeFromSuperview()
+        web = nil
+        if Self.current === self { Self.current = nil }
+        done(r)
+    }
+
+    func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        guard let url = action.request.url, let s = url.scheme?.lowercased() else { decisionHandler(.cancel); return }
+        // 页面想跳别的 App（taobao://、damai://）一律不跳；主页面只留在平台域名里
+        guard s == "https" || s == "http" || s == "about" || s == "blob" || s == "data" else { decisionHandler(.cancel); return }
+        if action.targetFrame?.isMainFrame == true, s == "https" || s == "http", !Self.allowed(url.host) { decisionHandler(.cancel); return }
+        decisionHandler(.allow)
+    }
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        if (error as NSError).code == NSURLErrorCancelled { return }
+        finish(result(blocked: false))
+    }
+}

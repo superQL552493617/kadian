@@ -172,13 +172,16 @@ struct WebRootView: View {
                 if p == .active { bridge.deliverWidgetTaps() }
                 if p == .background { bridge.flush { WidgetCenter.shared.reloadAllTimelines() } }
             }
-            // 测试包：摇一摇打开测试菜单（开关测试会员）
+            // 测试包：摇一摇打开测试菜单（复制对时和读链接的记录，发给开发）
             .onReceive(NotificationCenter.default.publisher(for: .deviceDidShake)) { _ in if TestMode.isTestBuild { askTest = true } }
             .confirmationDialog("测试菜单", isPresented: $askTest, titleVisibility: .visible) {
-                Button(TestMode.vip ? "关闭测试会员（用来测购买流程）" : "开启测试会员") {
-                    TestMode.setVip(!TestMode.vip)
-                    Task { await purchases.refresh() }
+                Button("测一遍所有时间源，复制结果") {
+                    Task {
+                        for src in TimeSync.allSources { _ = await TimeSync.sync(src) }
+                        UIPasteboard.general.string = Diag.text
+                    }
                 }
+                Button("复制测试记录") { UIPasteboard.general.string = Diag.text }
                 Button("取消", role: .cancel) {}
             } message: { Text("这个菜单只在测试包里出现。") }
     }
@@ -305,7 +308,7 @@ final class WebBridge: NSObject, ObservableObject, WKScriptMessageHandlerWithRep
           window.__XM_TEST__=\(TestMode.isTestBuild ? "true" : "false");
           window.__XM_SYSLANG__='\(Locale.preferredLanguages.first ?? "zh-Hans")';
           window.__XM_LANGPREF__='\(L10n.pref)';
-          try{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:function(t){return N({cmd:'copy',text:String(t)}).then(function(){})}}})}catch(e){}
+          try{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:function(t){return N({cmd:'copy',text:String(t)}).then(function(){})},readText:function(){return N({cmd:'paste'}).then(function(v){return v||''})}}})}catch(e){}
           window.storage={
             get:function(k){return N({cmd:'load'}).then(function(v){return v?{value:v}:null})},
             set:function(k,v){return N({cmd:'save',value:v}).then(function(){return true})}
@@ -360,8 +363,52 @@ final class WebBridge: NSObject, ObservableObject, WKScriptMessageHandlerWithRep
             UIPasteboard.general.string = body["text"] as? String ?? ""
             replyHandler(true, nil)
         case "open":
-            if let s = body["url"] as? String, let u = URL(string: s) { UIApplication.shared.open(u) }
+            guard let s = body["url"] as? String, let u = URL(string: s) else { replyHandler(false, nil); return }
+            UIApplication.shared.open(u, options: [:]) { ok in replyHandler(ok, nil) }
+        case "paste":
+            // 系统会弹「想从某 App 粘贴」的提示，所以只在用户点了粘贴或「使用」后才读
+            replyHandler(UIPasteboard.general.string ?? "", nil)
+        case "clipcheck":
+            // 只问系统「像不像网址」，不读内容，不弹提示
+            UIPasteboard.general.detectPatterns(for: [.probableWebURL]) { res in
+                let has: Bool
+                if case .success(let set) = res { has = set.contains(.probableWebURL) } else { has = false }
+                DispatchQueue.main.async { replyHandler(has, nil) }
+            }
+        case "timesync":
+            let src = body["src"] as? String ?? ""
+            Task { replyHandler(await TimeSync.sync(src), nil) }
+        case "linkinfo":
+            LinkReader.read(body["url"] as? String ?? "") { replyHandler($0, nil) }
+        case "scan":
+            guard let top = UIApplication.topViewController() else { replyHandler(["cancel": true], nil); return }
+            let vc = QRScannerController()
+            vc.modalPresentationStyle = .fullScreen
+            vc.onDone = { replyHandler($0, nil) }
+            top.present(vc, animated: true)
+        case "timeinfo":
+            PipClock.shared.setTimeInfo(body)
             replyHandler(true, nil)
+        case "pipconfig":
+            PipClock.shared.setConfig(body)
+            replyHandler(true, nil)
+        case "pip":
+            PipClock.shared.setTimeInfo(body)
+            PipClock.shared.setConfig(body)
+            if (body["on"] as? Bool) == true {
+                PipClock.shared.onLost = { [weak self] in
+                    self?.webView?.evaluateJavaScript("window.__kdPipLost&&__kdPipLost()", completionHandler: nil)
+                }
+                PipClock.shared.start { replyHandler($0, nil) }
+            } else {
+                PipClock.shared.stop()
+                replyHandler(true, nil)
+            }
+        case "pipstate":
+            replyHandler(PipClock.shared.active, nil)
+        case "live":
+            let items = body["items"] as? [[String: Any]] ?? []
+            Task { replyHandler(await LiveCountdown.apply(items), nil) }
         case "feedback":
             // 私密反馈问卷（腾讯问卷等）：页面里标题含「用户 ID」的填空题自动填上
             if let s = body["url"] as? String, let u = URL(string: s) { feedback = FeedbackFields(url: u, fill: body["fill"] as? String ?? UserID.value) }

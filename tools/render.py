@@ -108,6 +108,10 @@ targets:
           - CFBundleURLName: {C['bundleId']}
             CFBundleURLSchemes: [{C['urlScheme']}]
         ITSAppUsesNonExemptEncryption: false
+        # 卡点：悬浮时钟（系统画中画）在后台要继续走；灵动岛用实时活动
+        UIBackgroundModes:
+          - audio
+        NSSupportsLiveActivities: true
         NSFaceIDUsageDescription: {perm.get('faceId', '')}
         NSPhotoLibraryUsageDescription: {perm.get('photos', '')}
         NSCameraUsageDescription: {perm.get('camera', '')}

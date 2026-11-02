@@ -41,6 +41,10 @@ targets:
           - CFBundleURLName: site.xiaomanhabit.kadian
             CFBundleURLSchemes: [kadian]
         ITSAppUsesNonExemptEncryption: false
+        # 卡点：悬浮时钟（系统画中画）在后台要继续走；灵动岛用实时活动
+        UIBackgroundModes:
+          - audio
+        NSSupportsLiveActivities: true
         NSFaceIDUsageDescription: 用面容 ID 解锁，保护你的记录
         NSPhotoLibraryUsageDescription: 识别相册里的二维码；也可选择照片作为头像或图标
         NSCameraUsageDescription: 扫描二维码添加抢购活动；也可拍照作为头像或图标

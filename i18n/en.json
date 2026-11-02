@@ -2429,5 +2429,20 @@
 "这不是有效的链接，请重新填写": "This isn't a valid link. Please enter it again",
 "这不是链接，没有填入。可以粘贴 http 开头的网址或分享文字。": "That isn't a link, so it wasn't added. Paste a web address starting with http, or shared text.",
 "选好后，所有页面的文字都会换成这款字体。字体都已内置在 App 里，不用联网；个别生僻字会用系统字体显示。": "Once chosen, all text in the app switches to this font. Fonts are built in and need no network; rare characters use the system font.",
-"链接换了，开抢时间还是你之前填的，请确认。": "The link changed, but the sale time is still the one you entered. Please check it."
+"链接换了，开抢时间还是你之前填的，请确认。": "The link changed, but the sale time is still the one you entered. Please check it.",
+"平台要求验证，读不到这个页面，请手动填写。": "The platform asked for verification, so this page can’t be read. Please fill it in by hand.",
+"开抢时间 {} {}": "Sale time {0} {1}",
+"模拟剪贴板里有链接": "Simulate a link on the clipboard",
+"模拟：剪贴板里有链接": "Simulate: link on the clipboard",
+"没读到剪贴板，可以长按输入框粘贴": "Couldn’t read the clipboard. Long-press the box to paste.",
+"没读到开抢时间": "No sale time found",
+"相机打不开": "Can’t open the camera",
+"看添加页的「使用」提示": "See the “Use” hint on the add page",
+"读到的内容没有填入，可以手动填写。": "Nothing was filled in. You can fill it in by hand.",
+"读到这场活动": "Found this sale",
+"这个时间已经过了，请确认。": "This time has passed. Please check.",
+"这是读到的结果，可能不准，请和平台核对。": "This may not be accurate. Please check it against the platform.",
+"剪贴板里有链接": "There’s a link on the clipboard",
+"使用": "Use",
+"填入": "Fill in"
 }

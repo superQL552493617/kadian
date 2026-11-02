@@ -49,16 +49,6 @@ enum Persistence {
         return w
     }
 
-    /// 小组件上点了一项：先在小组件里显示成已完成，再记下来，等 App 打开时交给网页
-    static func widgetTap(_ id: String) {
-        var w = loadWidget()
-        if let i = w.items.firstIndex(where: { $0.id == id }) { w.items[i].done.toggle() }
-        if let d = try? JSONEncoder().encode(w) { try? d.write(to: widgetFile, options: [.atomic]) }
-        var taps = (try? Data(contentsOf: tapsFile)).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [[String: Any]] } ?? []
-        taps.append(["id": id, "t": Int(Date().timeIntervalSince1970 * 1000)])
-        if let d = try? JSONSerialization.data(withJSONObject: taps) { try? d.write(to: tapsFile, options: [.atomic]) }
-    }
-
     static func takeWidgetTaps() -> [[String: Any]] {
         let taps = (try? Data(contentsOf: tapsFile)).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [[String: Any]] } ?? []
         try? FileManager.default.removeItem(at: tapsFile)
@@ -76,6 +66,8 @@ struct WidgetData: Codable {
         /// 圆圈颜色 #RRGGBB
         var color: String = "#7DBF8A"
         var done: Bool = false
+        /// 开抢时刻（毫秒，已换算到手机时钟）
+        var at: Double? = nil
     }
     var title: String = ""
     var items: [Item] = []

@@ -15,7 +15,7 @@ await p.goto(URL_);await p.waitForFunction(()=>typeof S!=='undefined'&&S&&docume
 if(!o.guide)await p.evaluate(()=>{S.prefs.guided=true;S.prefs.agreed=POLICY_VER;save();document.querySelectorAll('.gd,.pc').forEach(x=>x.remove())});
 await p.waitForTimeout(150);return p}
 const shot=async(p,n)=>{if(SHOTS){fs.mkdirSync(SHOTS,{recursive:true});await p.screenshot({path:path.join(SHOTS,n+'.png')})}};
-const paste=(p,v)=>p.evaluate(v=>{const el=document.querySelector('#ieLink');el.value=v;el.dispatchEvent(new Event('paste'))},v).then(()=>p.waitForTimeout(60));
+const paste=(p,v)=>p.evaluate(v=>{const el=document.querySelector('#ieLink');el.value=v;el.dispatchEvent(new Event('paste'))},v).then(()=>p.waitForTimeout(60)).then(()=>p.evaluate(()=>{const o=document.querySelector('#lrOk');if(o)o.click()})).then(()=>p.waitForTimeout(60));
 const ie=p=>p.evaluate(()=>{const s=document.querySelector('.sheet.ie');return {link:s.querySelector('#ieLink').value,name:s.querySelector('#ieName').value,date:s.querySelector('#ieDate').value,time:s.querySelector('#ieTime').value,plat:s.querySelector('#ieSrc').value,note:(s.querySelector('.kd-enote')||{}).textContent||''}});
 const seed=(p,list)=>p.evaluate(list=>{const n=Date.now();S.items=list.map((x,i)=>({id:'t'+i,name:x.name,src:x.src||'ntp',at:n+x.in,link:x.link||'',remind:x.remind??5,live:x.live??true,auto:!!x.auto,createdAt:TODAY()}));save();renderToday()},list);
 (async()=>{const b=await chromium.launch();let p;
