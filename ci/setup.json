@@ -3,7 +3,7 @@
  "name": "OnCue",
  "profilePrefix": "AppStore",
  "createCertificate": false,
- "profiles": false,
- "run": 3,
+ "profiles": true,
+ "run": 4,
  "certificateId": "NN84P26CZ4"
 }

@@ -10,7 +10,7 @@ enum SFX {
     private static var sessionReady = false
     private static var tonePlayer: AVAudioPlayer?
     /// 悬浮窗开着时音频设置归它管，这里不改，否则画中画可能被停掉
-    static var sessionLocked = false
+    nonisolated(unsafe) static var sessionLocked = false
 
     /// 完成音效 sfx_<n>.wav：跟随静音键，不打断别的 App 的音乐
     static func play(_ n: Int) {

@@ -13913,7 +13913,7 @@ let once=false;$('#lrOk',r.al).onclick=()=>{if(once)return;once=true;r.close();r
 $('#lrNo',r.al).onclick=()=>{if(once)return;once=true;r.close();resAl=null;note='读到的内容没有填入，可以手动填写。';noteWarn=false;redraw()};return true};
 /* 换链接：上一条自动带出的名称、时间、平台先清掉，再按新链接读；手动填过的不动 */
 const useLink=v=>{const raw=v.trim(),url=normUrl(raw);if(raw&&raw===c.link)return;
-const my=++seq,prev=c.link;note='';noteWarn=false;
+const my=++seq,prev=c.link;note='';noteWarn=false;if(resAl){resAl.close();resAl=null}
 if(!nameTouched)c.name='';if(!timeTouched)c.at=null;
 const s=detectSrc(raw);if(s){if(s!==c.src){c.src=s;srcAuto=true;toast(`已识别为${SRC(s).name}`)}}else{if(srcAuto){c.src=baseSrc;srcAuto=false}if(url)toast('没认出是哪个平台，请手动选','gray')}
 c.link=url;
