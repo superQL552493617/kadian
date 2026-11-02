@@ -1,4 +1,4 @@
 "CFBundleDisplayName" = "OnCue";
 "NSFaceIDUsageDescription" = "Use Face ID to unlock and protect your records";
-"NSPhotoLibraryUsageDescription" = "Choose a photo for your avatar or an icon";
-"NSCameraUsageDescription" = "Take a photo for your avatar or an icon";
+"NSPhotoLibraryUsageDescription" = "Read QR codes from your photos; you can also choose a photo for your avatar or an icon";
+"NSCameraUsageDescription" = "Scan QR codes to add sale events; you can also take a photo for your avatar or an icon";

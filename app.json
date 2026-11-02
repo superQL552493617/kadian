@@ -69,10 +69,10 @@
   "permissions": {
     "faceId": "用面容 ID 解锁，保护你的记录",
     "faceIdEn": "Use Face ID to unlock and protect your records",
-    "photos": "选择照片作为头像或图标",
-    "photosEn": "Choose a photo for your avatar or an icon",
-    "camera": "拍照作为头像或图标",
-    "cameraEn": "Take a photo for your avatar or an icon"
+    "photos": "识别相册里的二维码；也可选择照片作为头像或图标",
+    "photosEn": "Read QR codes from your photos; you can also choose a photo for your avatar or an icon",
+    "camera": "扫描二维码添加抢购活动；也可拍照作为头像或图标",
+    "cameraEn": "Scan QR codes to add sale events; you can also take a photo for your avatar or an icon"
   },
   "appStoreId": "",
   "lookupCountry": "cn",

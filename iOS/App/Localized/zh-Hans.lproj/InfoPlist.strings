@@ -1,4 +1,4 @@
 "CFBundleDisplayName" = "卡点";
 "NSFaceIDUsageDescription" = "用面容 ID 解锁，保护你的记录";
-"NSPhotoLibraryUsageDescription" = "选择照片作为头像或图标";
-"NSCameraUsageDescription" = "拍照作为头像或图标";
+"NSPhotoLibraryUsageDescription" = "识别相册里的二维码；也可选择照片作为头像或图标";
+"NSCameraUsageDescription" = "扫描二维码添加抢购活动；也可拍照作为头像或图标";

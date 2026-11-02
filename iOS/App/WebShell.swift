@@ -78,7 +78,7 @@ enum DeviceInfo {
     static var build: String { (Bundle.main.infoDictionary?["CFBundleVersion"] as? String) ?? "1" }
 }
 
-// MARK: - 开屏页（只在冷启动时出现，至少 1.2 秒，点一下可以跳过）
+// MARK: - 开屏页（只在冷启动时出现，卡点取消最短时长（需求说明 3.7），网页好了就消失）
 
 struct SplashView: View {
     var body: some View {
@@ -142,9 +142,9 @@ struct WebRootView: View {
                         .transition(.opacity)
                 }
             }
-            .animation(.easeOut(duration: 0.4), value: splashGone)
+            .animation(.easeOut(duration: 0.15), value: splashGone)
             .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { minShown = true; if bridge.ready { endSplash() } }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { minShown = true; if bridge.ready { endSplash() } }
             }
             .onChange(of: bridge.ready) { _, r in if r && minShown { endSplash() } }
             // <scheme>://<页面>，比如 starter://note（小组件用）
