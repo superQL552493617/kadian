@@ -13541,7 +13541,8 @@ const PIP_PALS=[
 {id:'sky',name:'深蓝',bg:'#1F4E8C',fg:'#FFFFFF',ms:'#9CD2FF',al:'#FFB020'},
 {id:'pine',name:'松绿',bg:'#1F5C46',fg:'#EFFAF3',ms:'#9BE7C0',al:'#FFC247'},
 {id:'plum',name:'葡萄',bg:'#4A2A6B',fg:'#FFFFFF',ms:'#E3B7FF',al:'#FFB347'}];
-const pipP=()=>{S.prefs.pip=Object.assign({shape:'std',msDigits:1,palette:'ink',msSame:true,alertSec:10,sound:false,mode:'clock'},S.prefs.pip||{});return S.prefs.pip};
+const PIP_DEF={shape:'std',msDigits:1,palette:'ink',msSame:true,alertSec:10,sound:false,mode:'clock'};
+const pipP=()=>{const p=S.prefs.pip||(S.prefs.pip={});for(const k in PIP_DEF)if(p[k]===undefined)p[k]=PIP_DEF[k];return p};
 function pushPip(){if(IN_APP&&PIP_ON)NN({cmd:'pipconfig',...pipP()}).catch(()=>{})}
 function floatStyle(el){const p=pipP(),c=PIP_PALS.find(x=>x.id===p.palette)||PIP_PALS[0];
 el.classList.remove('s-std','s-slim','s-thin');el.classList.add('s-'+p.shape);
