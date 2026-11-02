@@ -7,15 +7,16 @@ Effective: {DATE_EN}
 
 **1. We don’t collect your personal data**
 
-The App requires no sign-up or login and has no servers of its own. The records, avatar, images and settings you create are stored only on your phone. We can’t see or access any of them.
+The App requires no sign-up or login and has no servers of its own. The sale events, practice results, avatar and settings you add are stored only on your phone. We can’t see or access any of them.
 
 **2. Phone permissions**
 
 The following permissions are requested only when you use the related feature. You can decline them or turn them off anytime in the system Settings; other features keep working:
 
-• Photos: used when you choose an image. The selected image is compressed and stored only on your device.
-• Camera: used when you take a photo.
-• Notifications: used for the reminders you set. Reminders are scheduled on your device without going through the network.
+• Camera: used when you scan a QR code to add a sale event, or take a photo for your avatar. The image is read on your phone and never uploaded.
+• Photos: used when you choose a QR code image or an avatar. The selected image is processed and stored only on your device.
+• Notifications: used for reminders before a sale starts. Reminders are scheduled on your device without going through the network.
+• Live Activities: used to show the sale countdown on the Dynamic Island and Lock Screen. The content stays on your device.
 • Face ID / Touch ID: used only when you turn on the passcode lock. Verification is done by the system; the App never receives your biometric data.
 
 **3. User ID**
@@ -28,9 +29,10 @@ The Feedback page is provided by a third-party survey service. To help troublesh
 
 **5. Features that use the network**
 
+• Time sync: asks time services and the public time endpoints of the platforms you choose for the current time. Only the time is read; no personal information is sent.
+• Reading links: when you paste or scan a sale link, your phone reads that one public page to pick up the event title and sale time and fills them into the editor. It doesn’t log in or send your account information, reads only that page, and keeps the result only on your device.
 • Check for updates: asks Apple’s App Store for the latest version number; no personal information is sent.
-• Premium purchases: purchases, renewals and restores are handled by Apple’s App Store; we never receive your payment information.
-• External web pages are handled by those websites under their own rules.
+• Sale pages and other external websites or apps you open are handled by those platforms under their own rules.
 
 **6. Third-party SDKs**
 
@@ -38,7 +40,7 @@ The App does not include any third-party SDKs (including advertising, analytics 
 
 **7. Storing, exporting and deleting data**
 
-You can export all your data anytime in the App. Deleting the App deletes all data on your device, so please export a backup first. Because we don’t have your data, we can’t recover or delete it for you; deletion is done entirely by you on your phone.
+You can export all your data anytime in the App, and clear your sales and practice results in Settings. Deleting the App deletes all data on your device, so please export a backup first. Because we don’t have your data, we can’t recover or delete it for you; deletion is done entirely by you on your phone.
 
 **8. Children**
 
