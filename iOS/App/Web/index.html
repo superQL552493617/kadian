@@ -13849,8 +13849,7 @@ const c=orig?JSON.parse(JSON.stringify(orig)):copyFrom?{...JSON.parse(JSON.strin
 let nameTouched=!!c.name,timeTouched=!!c.at,dDate='',dTime='',more=false,note='',noteWarn=false,seq=0,srcAuto=false,saved=false,clipHas=false,resAl=null,wantPip=PIP_ON,linkMiss=false;const baseSrc=c.src;
 const draw=()=>{const ent=SRC(c.src).entry;return `<div class="sheet-head"><button class="acx-tx" id="ieX">取消</button><h3>${orig?'编辑抢购':'添加抢购'}</h3><button class="acx-tx save" id="ieOk">保存</button></div>
 <div class="kd-link2"><input id="ieLink" placeholder="粘贴抢购链接或分享文字" aria-label="抢购链接" value="${esc(c.link)}" autocomplete="off"><button id="iePaste" aria-label="粘贴">${IC_PASTE}</button><button id="ieScan" aria-label="扫码">${IC_SCAN}</button></div>
-${clipHas&&!c.link?'<div class="kd-clip"><span>剪贴板里有链接</span><button id="ieClip">使用</button></div>':''}
-${linkMiss&&c.link&&!c.at?`<div class="kd-clip"><span>这场读不到开抢时间</span><button id="ieLook">去${esc(T(platName(c.src)))}看时间</button></div>`:''}
+<div id="ieHints">${clipHas&&!c.link?'<div class="kd-clip"><span>剪贴板里有链接</span><button id="ieClip">使用</button></div>':''}${linkMiss&&c.link&&!c.at?`<div class="kd-clip"><span>这场读不到开抢时间</span><button id="ieLook">去${esc(T(platName(c.src)))}看时间</button></div>`:''}</div>
 <input class="kd-inp" id="ieName" maxlength="60" aria-label="名称" placeholder="名称，比如：某某演唱会 北京站" value="${esc(c.name)}">
 <div class="kd-rows">
 <div class="kd-row"><span class="kd-rl">开抢时间</span><span class="kd-rv"><label class="kd-pick${c.at||dDate?'':' empty'}">${c.at?dayLabel(c.at):dDate?dayLabel(new Date(dDate+'T00:00:00')):'选日期'}<input type="date" id="ieDate" value="${c.at?dIn(c.at):dDate}" aria-label="开抢日期"></label><label class="kd-pick${c.at||dTime?'':' empty'}">${c.at?hms(new Date(c.at)):dTime||'选时间'}<input type="time" step="1" id="ieTime" value="${c.at?hms(new Date(c.at)):dTime}" aria-label="开抢时间"></label></span></div>
