@@ -13659,7 +13659,7 @@ const d=new Date(displayNow(curSrc()));
 const h=$('#kdHms'),m=$('#kdMs');if(h){const t=hms(d);if(h.textContent!==t)h.textContent=t;m.textContent=ms3(d)}
 $$('.kd-float[data-live]').forEach(el=>paintFloat(el,!!DRILL));
 if(PIP_ON&&S&&pipP().sound){const t=nextLive(),l=t?t.at-displayNow(t.src,!!DRILL):null;if(l!=null){const sc=Math.ceil(l/1000),w=pipP().alertSec||10;if(sc!==BEEP_S){if(BEEP_S!=null&&sc>0&&sc<=w)kdBeep(false);else if(BEEP_S===1&&sc<=0)kdBeep(true);BEEP_S=sc}}}
-$$('[data-cd]').forEach(el=>{const ms=+el.dataset.cd-displayNow(el.dataset.src);let t=ms>0?fmtCd(ms):(ms>-60e3&&!el.dataset.short?firedText(ms):'已开抢');if(el.dataset.short&&ms>0)t=t.replace(/\.\d$/,'');if(el.textContent!==t)el.textContent=t;el.classList.toggle('soon',ms>0&&ms<60e3)});
+$$('[data-cd]').forEach(el=>{const ms=+el.dataset.cd-displayNow(el.dataset.src);let t=ms>0?fmtCd(ms):(ms>-60e3&&!el.dataset.short?firedText(ms):'已开抢');if(el.dataset.short&&ms>0)t=t.replace(/\.\d+$/,'');if(el.textContent!==t)el.textContent=t;el.classList.toggle('soon',ms>0&&ms<60e3)});
 if(S&&!document.hidden){for(const it of items()){const n=platformNow(it.src);if(it.auto&&it.link&&!it.opened&&n>=it.at-autoLeadOf(it)*1e3&&n<it.at+60e3){it.opened=1;save();toast('快开抢了，已打开抢购页');openLink(it.id)}}}
 if(DRILL)DRILL.frame();
 /* 开抢过了 60 秒，「下一场」卡片要换到真正的下一场，和悬浮窗保持同一场 */
