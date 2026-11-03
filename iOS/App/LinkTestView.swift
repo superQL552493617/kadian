@@ -223,6 +223,7 @@ private struct TestWeb: UIViewRepresentable {
 struct LinkTestView: View {
     @StateObject private var m = LinkTestModel()
     @State private var showWeb = false
+    @State private var copied = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -243,8 +244,12 @@ struct LinkTestView: View {
             Text("标题：\(m.title)").font(.subheadline)
             Text("开抢时间：\(m.saleTime)").font(.subheadline)
             Text("状态：\(m.status)").font(.subheadline.weight(.semibold))
-            Button("测一遍时间源") { m.testTimeSources() }
-            Button("复制日志") { UIPasteboard.general.string = m.log.joined(separator: "\n") }
+            Button("测一遍时间源") { m.testTimeSources() }.buttonStyle(.bordered)
+            Button(copied ? "已复制，去聊天里粘贴" : "复制日志") {
+                UIPasteboard.general.string = m.log.joined(separator: "\n")
+                copied = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) { copied = false }
+            }.buttonStyle(.borderedProminent)
             ScrollView {
                 Text(m.log.joined(separator: "\n")).font(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
             }.frame(maxHeight: .infinity)
