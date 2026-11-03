@@ -213,7 +213,7 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { add("加载失败：\(error.localizedDescription)") }
     func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         let s = action.request.url?.scheme?.lowercased() ?? ""
-        if s == "https" || s == "http" || s == "about" || s == "blob" || s == "data" { decisionHandler(.allow) } else { add("页面想跳别的 App（\(s)），没跳"); decisionHandler(.cancel) }
+        if s == "https" || s == "http" || s == "about" || s == "blob" || s == "data" { decisionHandler(.allow) } else { add("页面想跳别的 App，没跳：\(action.request.url?.absoluteString.prefix(300) ?? "")"); decisionHandler(.cancel) }
     }
 }
 
