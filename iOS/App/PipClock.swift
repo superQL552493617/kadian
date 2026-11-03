@@ -481,11 +481,18 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 enum Beep {
     private static var players: [Bool: AVAudioPlayer] = [:]
     static func play(end: Bool) {
-        if players[end] == nil, let p = try? AVAudioPlayer(data: wav(freq: end ? 1320 : 880, seconds: end ? 0.32 : 0.07, gain: end ? 0.4 : 0.22)) {
+        // 悬浮窗没开时音频设置还没配好，这里配上；和音乐混合，不打断
+        if !SFX.sessionLocked {
+            try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
+            try? AVAudioSession.sharedInstance().setActive(true)
+        }
+        // 原来 0.07 秒、音量 0.22，又是渐弱的，几乎听不见
+        if players[end] == nil, let p = try? AVAudioPlayer(data: wav(freq: end ? 1320 : 1000, seconds: end ? 0.45 : 0.16, gain: end ? 0.9 : 0.75)) {
             p.prepareToPlay(); players[end] = p
         }
         players[end]?.currentTime = 0
-        players[end]?.play()
+        let ok = players[end]?.play() ?? false
+        Diag.add("提示音 \(end ? "到点" : "嘀") 播放\(ok ? "成功" : "失败")")
     }
     private static func wav(freq: Double, seconds: Double, gain: Double) -> Data {
         let rate = 44100, n = Int(Double(rate) * seconds)

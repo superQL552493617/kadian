@@ -366,6 +366,9 @@ final class WebBridge: NSObject, ObservableObject, WKScriptMessageHandlerWithRep
         case "open":
             guard let s = body["url"] as? String, let u = URL(string: s) else { replyHandler(false, nil); return }
             UIApplication.shared.open(u, options: [:]) { ok in replyHandler(ok, nil) }
+        case "beep":
+            Beep.play(end: (body["end"] as? Bool) == true)
+            replyHandler(true, nil)
         case "openapp":
             AppLink.open(body["url"] as? String ?? "") { replyHandler($0, nil) }
         case "linktest":
