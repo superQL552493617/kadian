@@ -70,7 +70,7 @@ final class LinkReader: NSObject, WKNavigationDelegate {
     static let capture = """
     (function(){var K=/开抢|开售|开票|开卖|预售|sellStart|sellTime|saleTime|openTime|startTime|itemName|projectName|performName/i;window.__kdCap=[];
     function cut(u){return String(u||'').split('?')[0].slice(0,120)}
-    function add(src,t){try{t=typeof t==='string'?t:JSON.stringify(t);if(t&&(window.__kdAll||K.test(t)||/mtop|subpage/.test(String(src)))&&window.__kdCap.length<(window.__kdAll?60:24))window.__kdCap.push({src:cut(src),body:t.slice(0,200000)})}catch(e){}}
+    function add(src,t){try{t=typeof t==='string'?t:JSON.stringify(t);var inl=src==='内嵌脚本';if(t&&((window.__kdAll&&!inl)||K.test(t)||/mtop|subpage/.test(String(src)))&&window.__kdCap.length<(window.__kdAll?(inl?12:80):24))window.__kdCap.push({src:cut(src),body:t.slice(0,200000)})}catch(e){}}
     var F=window.fetch;if(F)window.fetch=function(){var a=arguments,u=a[0]&&a[0].url||a[0];return F.apply(this,a).then(function(r){try{r.clone().text().then(function(t){add(u,t)})}catch(e){}return r})};
     var O=XMLHttpRequest.prototype.open,S=XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.open=function(m,u){this.__kdU=u;return O.apply(this,arguments)};

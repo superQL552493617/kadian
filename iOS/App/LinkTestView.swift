@@ -154,9 +154,12 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
             guard let self, id == self.runId else { return }
             let list = (res as? String).flatMap { $0.data(using: .utf8) }.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [[String: Any]] } ?? []
             self.search(list)
+            self.add("页面文字（前 300 字）：\(String(self.pageAll.prefix(300)).replacingOccurrences(of: "\n", with: " / "))")
+            self.add("数据来源（内嵌脚本不列）：")
             for c in list {
                 let src = c["src"] as? String ?? "", body = c["body"] as? String ?? ""
                 if src.contains("subpage") { self.add("【subpage】\(body.count) 字：\(String(body.prefix(500)))") }
+                if src == "内嵌脚本" { continue }
                 self.add("【\(src.isEmpty ? "?" : src)】\(body.count) 字")
                 // 只对平台接口列时间字段；内嵌脚本和统计脚本全是旧配置，列出来只是干扰
                 guard src.contains("mtop") || src.contains("api.") else { continue }
