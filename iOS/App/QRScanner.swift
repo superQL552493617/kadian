@@ -2,6 +2,7 @@ import UIKit
 import AVFoundation
 import PhotosUI
 import CoreImage
+import Vision
 
 // MARK: - 扫码（cmd:'scan'）
 // 点了才要相机权限；可从相册识别（系统选择器，不要整库权限）。只把内容交给网页，不自动打开。
@@ -114,10 +115,45 @@ final class QRScannerController: UIViewController, AVCaptureMetadataOutputObject
         }
     }
 
+    /// 海报角落的小二维码（带 Logo）整张识别不出来：先整张试，再把图切块放大逐块试
     private static func decode(_ img: UIImage) -> String? {
         guard let cg = img.cgImage else { return nil }
+        if let t = vision(cg) ?? detector(cg) { return t }
+        let w = CGFloat(cg.width), h = CGFloat(cg.height)
+        // 右下角优先，海报的二维码最常在那里
+        for n in [2, 3] {
+            let cw = w / CGFloat(n), ch = h / CGFloat(n)
+            for row in (0..<n).reversed() {
+                for col in (0..<n).reversed() {
+                    // 每块多切一点，二维码跨在分界线上也能完整
+                    let rect = CGRect(x: CGFloat(col) * cw - cw * 0.15, y: CGFloat(row) * ch - ch * 0.15, width: cw * 1.3, height: ch * 1.3)
+                        .intersection(CGRect(x: 0, y: 0, width: w, height: h)).integral
+                    guard let part = cg.cropping(to: rect), let big = enlarge(part, by: 3) else { continue }
+                    if let t = vision(big) ?? detector(big) { return t }
+                }
+            }
+        }
+        return nil
+    }
+
+    private static func vision(_ cg: CGImage) -> String? {
+        let req = VNDetectBarcodesRequest()
+        req.symbologies = [.qr]
+        try? VNImageRequestHandler(cgImage: cg, options: [:]).perform([req])
+        return req.results?.compactMap { $0.payloadStringValue }.first
+    }
+
+    private static func detector(_ cg: CGImage) -> String? {
         let det = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
         return det?.features(in: CIImage(cgImage: cg)).compactMap { ($0 as? CIQRCodeFeature)?.messageString }.first
+    }
+
+    private static func enlarge(_ cg: CGImage, by k: CGFloat) -> CGImage? {
+        let size = CGSize(width: min(CGFloat(cg.width) * k, 3000), height: min(CGFloat(cg.height) * k, 3000))
+        let f = UIGraphicsImageRendererFormat(); f.scale = 1
+        return UIGraphicsImageRenderer(size: size, format: f).image { _ in
+            UIImage(cgImage: cg).draw(in: CGRect(origin: .zero, size: size))
+        }.cgImage
     }
 
     private func finish(_ r: [String: Any]) {
