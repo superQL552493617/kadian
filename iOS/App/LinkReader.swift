@@ -15,7 +15,7 @@ final class LinkReader: NSObject, WKNavigationDelegate {
 
     /// 只读这些平台的页面。其他网址不读，走手动填
     private static let hosts = ["damai.cn", "taobao.com", "tmall.com", "tb.cn", "jd.com", "3.cn", "maoyan.com",
-                                "pinduoduo.com", "yangkeduo.com", "meituan.com", "12306.cn"]
+                                "pinduoduo.com", "yangkeduo.com", "meituan.com", "12306.cn", "piaoxingqiu.com"]
     static func allowed(_ host: String?) -> Bool {
         guard let h = host?.lowercased() else { return false }
         return hosts.contains { h == $0 || h.hasSuffix("." + $0) }

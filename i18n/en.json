@@ -2492,5 +2492,7 @@
 "网页预览读不了日历，装进 App 后可以用": "The web preview can’t read the calendar. It works in the app.",
 "（没有标题）": "(No title)",
 "选大麦等 App 写进日历的那一条，它的时间会填成开抢时间。": "Choose the event added by the sale app. Its time becomes the sale time.",
-"有些场次的链接读不到开抢时间。可以点「去 App 看时间」，回来手动填；如果已经在平台 App 里添加到日历，点「从日历添加」选那一条。": "Some links have no sale time. Check it in the app and fill it in, or if you added it to your calendar there, tap “From calendar” and choose it."
+"有些场次的链接读不到开抢时间。可以点「去 App 看时间」，回来手动填；如果已经在平台 App 里添加到日历，点「从日历添加」选那一条。": "Some links have no sale time. Check it in the app and fill it in, or if you added it to your calendar there, tap “From calendar” and choose it.",
+"票星球": "Piaoxingqiu",
+"票星球服务器": "Piaoxingqiu server"
 }

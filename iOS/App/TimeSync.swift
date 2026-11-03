@@ -19,7 +19,7 @@ enum TimeSync {
         }
     }
 
-    static let allSources = ["ntp", "damai", "taobao", "jd", "maoyan", "12306", "pdd", "meituan"]
+    static let allSources = ["ntp", "damai", "taobao", "jd", "maoyan", "12306", "pdd", "meituan", "pxq"]
 
     static let table: [String: [Way]] = [
         "ntp": [.ntp("ntp.ntsc.ac.cn"), .ntp("ntp.aliyun.com"), .ntp("cn.pool.ntp.org")],
@@ -31,6 +31,7 @@ enum TimeSync {
         "maoyan": [.date("https://m.maoyan.com/")],
         "12306": [.date("https://kyfw.12306.cn/otn/")],
         "pdd": [.json("https://api.pinduoduo.com/api/server/_stm", ["server_time"]), .date("https://mobile.yangkeduo.com/")],
+        "pxq": [.date("https://m.piaoxingqiu.com/")],
         "meituan": [.json("https://cube.meituan.com/ipromotion/cube/toc/component/base/getServerCurrentTime", ["data"]), .date("https://i.meituan.com/")],
     ]
 

@@ -56,7 +56,7 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
         title = ""; saleTime = ""; pageText = ""; pageAll = ""; log = []
         let raw = link.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let urlRange = raw.range(of: "https?://[^\\s，。]+", options: .regularExpression), let url = URL(string: String(raw[urlRange])) else { status = "没找到链接"; return }
-        guard LinkReader.allowed(url.host) else { status = "不在平台名单里（大麦、淘宝、天猫、京东、猫眼、拼多多、美团、12306）"; return }
+        guard LinkReader.allowed(url.host) else { status = "不在平台名单里（大麦、淘宝、天猫、京东、猫眼、拼多多、美团、12306、票星球）"; return }
         let stages: [(String, URL, String)] = [("手机网页", url, LinkReader.safariUA)]
         self.stages = stages
         status = "读取中"
