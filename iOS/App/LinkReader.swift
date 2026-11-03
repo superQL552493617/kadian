@@ -5,7 +5,8 @@ import WebKit
 // MARK: - 读取用户粘贴的这一个链接（cmd:'linkinfo'）
 // 老板决定（决策记录 2026-11-01、11-02）：只在用户粘贴或扫码时，由用户手机打开这一个公开页面，取标题和文字。
 // 做法：隐藏的网页视图，和用户自己用手机打开这个页面一样，页面自己的脚本跑完后读屏幕上的文字。
-// 不登录、不带 cookie（用一次性的数据空间）、不定时、不批量、不自己拼接口或签名、不伪装浏览器。
+// 不登录、不带 cookie（用一次性的数据空间）、不定时、不批量、不自己拼接口或签名。
+// User-Agent 用 iPhone Safari（老板 2026-11-02 给的验证方案要求，页面才按手机网页显示）。
 // 碰到验证码或登录页直接放弃，不绕过，走手动填。时间由网页的 parseSaleTime 判断，这里不猜。
 
 @MainActor
@@ -52,6 +53,7 @@ final class LinkReader: NSObject, WKNavigationDelegate {
         cfg.websiteDataStore = .nonPersistent()
         cfg.mediaTypesRequiringUserActionForPlayback = .all
         let wv = WKWebView(frame: CGRect(x: 0, y: 0, width: 390, height: 844), configuration: cfg)
+        wv.customUserAgent = Self.safariUA
         wv.navigationDelegate = self
         wv.isUserInteractionEnabled = false
         wv.alpha = 0.01
@@ -61,7 +63,9 @@ final class LinkReader: NSObject, WKNavigationDelegate {
         poll()
     }
 
-    private static let snapshot = """
+    static let safariUA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1"
+
+    static let snapshot = """
     (function(){var b=document.body,t=b?b.innerText:'',og=document.querySelector('meta[property="og:title"]'),best='',bs=0;
     var els=document.querySelectorAll('h1,h2,h3,[class*=title],[class*=Title],[class*=name],[class*=Name]');
     for(var i=0;i<els.length&&i<200;i++){var e=els[i],s=(e.innerText||'').trim();if(s.length<4||s.length>80||s.indexOf('\\n')>=0)continue;

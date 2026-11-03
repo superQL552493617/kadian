@@ -182,6 +182,7 @@ struct WebRootView: View {
                     }
                 }
                 Button("复制测试记录") { UIPasteboard.general.string = Diag.text }
+                Button("读链接测试") { UIApplication.topViewController()?.present(UIHostingController(rootView: LinkTestView()), animated: true) }
                 Button("取消", role: .cancel) {}
             } message: { Text("这个菜单只在测试包里出现。") }
     }
@@ -365,6 +366,12 @@ final class WebBridge: NSObject, ObservableObject, WKScriptMessageHandlerWithRep
         case "open":
             guard let s = body["url"] as? String, let u = URL(string: s) else { replyHandler(false, nil); return }
             UIApplication.shared.open(u, options: [:]) { ok in replyHandler(ok, nil) }
+        case "openapp":
+            AppLink.open(body["url"] as? String ?? "") { replyHandler($0, nil) }
+        case "linktest":
+            guard let top = UIApplication.topViewController(), TestMode.isTestBuild else { replyHandler(false, nil); return }
+            top.present(UIHostingController(rootView: LinkTestView()), animated: true)
+            replyHandler(true, nil)
         case "paste":
             // 系统会弹「想从某 App 粘贴」的提示，所以只在用户点了粘贴或「使用」后才读
             replyHandler(UIPasteboard.general.string ?? "", nil)

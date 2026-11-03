@@ -33,6 +33,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private var byUser = false
     private var pending: ((Bool) -> Void)?
     private var lastBeep: Int?
+    /// 后面几场（JS 在后台不运行，所以提前交过来，到点后原生自己换下一场）
+    private var targets: [(at: Double, label: String)] = []
 
     // MARK: 命令
 
@@ -56,6 +58,12 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         if let v = b["al"] as? String { alColor = Self.color(v) ?? alColor }
         if let v = (b["target"] as? NSNumber)?.doubleValue { target = v }
         if let v = b["targetLabel"] as? String { targetLabel = v }
+        if let v = b["targets"] as? [[String: Any]] {
+            targets = v.compactMap { d in
+                guard let a = (d["at"] as? NSNumber)?.doubleValue else { return nil }
+                return (a, d["label"] as? String ?? "")
+            }
+        }
         if let v = b["firedLabel"] as? String { firedLabel = v }
         if let v = b["leadLabel"] as? String { leadLabel = v }
         if let v = b["secUnit"] as? String { secUnit = v }
@@ -151,6 +159,10 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private struct View { var main = "", ms = "", small = "", alert = false }
 
     private func compute(_ now: Double) -> View {
+        // 上一场到点超过 60 秒，换下一场
+        if let n = targets.first(where: { $0.at - now > -60_000 }), n.at != target {
+            target = n.at; targetLabel = n.label; lastBeep = nil
+        }
         let left: Double? = target > 0 ? target - now : nil
         var v = View()
         v.alert = left.map { alertSec > 0 && $0 > 0 && $0 <= Double(alertSec) * 1000 } ?? false
@@ -209,7 +221,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         switch shape {
         case "slim": return CGSize(width: 720, height: 180)
         case "thin": return CGSize(width: 720, height: 120)
-        default: return CGSize(width: 720, height: 300)
+        default: return CGSize(width: 720, height: 360) // 老板要大一点：比例越接近方形，系统给的窗口越高
         }
     }
 
@@ -266,7 +278,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         let showSmall = shape != "thin"
         let h = size.height
         // 字号：先按形状定，放不下再缩，数字等宽所以跳动时不抖
-        var pt: CGFloat = shape == "thin" ? h * 0.74 : shape == "slim" ? h * 0.56 : h * 0.44
+        var pt: CGFloat = shape == "thin" ? h * 0.74 : shape == "slim" ? h * 0.56 : h * 0.46
         let padX: CGFloat = 28
         let reserve: CGFloat = shape == "slim" ? size.width * 0.2 : 0
         let avail = size.width - padX * 2 - reserve
@@ -288,7 +300,10 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         case "thin":
             t.draw(at: CGPoint(x: (size.width - ts.width) / 2, y: (h - ts.height) / 2))
         default:
-            if showSmall { NSAttributedString(string: v.small, attributes: smallAttrs).draw(at: CGPoint(x: padX, y: h * 0.1)) }
+            if showSmall {
+                let sm = NSAttributedString(string: v.small, attributes: smallAttrs)
+                sm.draw(with: CGRect(x: padX, y: h * 0.1, width: size.width - padX * 2, height: h * 0.2), options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], context: nil)
+            }
             if !leadLabel.isEmpty {
                 let m = NSAttributedString(string: leadLabel, attributes: smallAttrs)
                 m.draw(at: CGPoint(x: size.width - padX - m.size().width, y: h * 0.1))
