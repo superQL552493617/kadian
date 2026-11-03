@@ -72,7 +72,9 @@
     "photos": "识别相册里的二维码；也可选择照片作为头像或图标",
     "photosEn": "Read QR codes from your photos; you can also choose a photo for your avatar or an icon",
     "camera": "扫描二维码添加抢购活动；也可拍照作为头像或图标",
-    "cameraEn": "Scan QR codes to add sale events; you can also take a photo for your avatar or an icon"
+    "cameraEn": "Scan QR codes to add sale events; you can also take a photo for your avatar or an icon",
+    "calendars": "读取你选择的日程时间，填到抢购活动里；只在手机上读取，不上传",
+    "calendarsEn": "Reads the event you choose to fill in a sale time. It stays on your phone and is never uploaded."
   },
   "appStoreId": "",
   "lookupCountry": "cn",

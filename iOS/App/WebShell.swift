@@ -369,6 +369,8 @@ final class WebBridge: NSObject, ObservableObject, WKScriptMessageHandlerWithRep
         case "beep":
             Beep.play(end: (body["end"] as? Bool) == true)
             replyHandler(true, nil)
+        case "calendar":
+            CalendarRead.upcoming { replyHandler($0, nil) }
         case "openapp":
             AppLink.open(body["url"] as? String ?? "") { replyHandler($0, nil) }
         case "linktest":

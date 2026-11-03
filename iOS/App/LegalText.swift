@@ -8,8 +8,8 @@ enum LegalText {
     static let privacyZH = """
 **卡点 隐私政策**
 
-更新日期：2026 年 11 月 1 日
-生效日期：2026 年 11 月 1 日
+更新日期：2026 年 11 月 2 日
+生效日期：2026 年 11 月 2 日
 
 卡点（以下简称"本 App"）由个人开发者 lang qin 开发和运营。我们非常重视你的隐私，本政策说明本 App 会处理哪些信息、为什么处理以及你的权利。
 
@@ -21,6 +21,7 @@ enum LegalText {
 
 以下权限都只在你使用相关功能时才会请求，你可以拒绝，也可以随时在系统"设置"里关闭，关闭后不影响其他功能：
 
+• 日历：你点「从日历添加」时使用，读取未来半年的日程供你选择，选中的时间填到抢购活动里。只在手机上读取，不会上传。
 • 相机：你扫描二维码添加抢购活动时使用，也可以在设置头像时拍照。画面只在手机上识别，不会上传。
 • 相册：你从相册选二维码图片或头像时使用，选中的图片只在本机处理和保存。
 • 通知：用于开抢前的提醒，提醒在本机安排，不经过网络。
@@ -62,7 +63,7 @@ enum LegalText {
     static let termsZH = """
 **卡点 用户协议**
 
-更新日期：2026 年 11 月 1 日
+更新日期：2026 年 11 月 2 日
 
 欢迎使用卡点（以下简称"本 App"）。本 App 由个人开发者 lang qin 开发和运营。使用本 App 前请仔细阅读本协议，点"同意并继续"或继续使用即表示你同意本协议。
 
@@ -97,8 +98,8 @@ enum LegalText {
     static let privacyEN = """
 **OnCue Privacy Policy**
 
-Last updated: November 1, 2026
-Effective: November 1, 2026
+Last updated: November 2, 2026
+Effective: November 2, 2026
 
 OnCue ("the App") is developed and operated by independent developer lang qin. We take your privacy seriously. This policy explains what information the App handles, why, and your rights.
 
@@ -110,6 +111,7 @@ The App requires no sign-up or login and has no servers of its own. The sale eve
 
 The following permissions are requested only when you use the related feature. You can decline them or turn them off anytime in the system Settings; other features keep working:
 
+• Calendar: used when you tap “From calendar”. It reads your events for the next six months so you can choose one, and fills its time into the sale. It stays on your phone and is never uploaded.
 • Camera: used when you scan a QR code to add a sale event, or take a photo for your avatar. The image is read on your phone and never uploaded.
 • Photos: used when you choose a QR code image or an avatar. The selected image is processed and stored only on your device.
 • Notifications: used for reminders before a sale starts. Reminders are scheduled on your device without going through the network.
@@ -151,7 +153,7 @@ If this policy changes significantly, the App will ask you to read and agree to 
     static let termsEN = """
 **OnCue Terms of Use**
 
-Last updated: November 1, 2026
+Last updated: November 2, 2026
 
 Welcome to OnCue ("the App"). The App is developed and operated by independent developer lang qin. Please read these terms carefully before using the App. By tapping “Agree and continue” or continuing to use the App, you agree to these terms.
 
@@ -186,8 +188,8 @@ If these terms change significantly, the App will ask you to read and agree to t
     static let privacyHant = """
 **卡點 隱私政策**
 
-更新日期：2026 年 11 月 1 日
-生效日期：2026 年 11 月 1 日
+更新日期：2026 年 11 月 2 日
+生效日期：2026 年 11 月 2 日
 
 卡點（以下簡稱"本 App"）由個人開發者 lang qin 開發和運營。我們非常重視你的隱私，本政策說明本 App 會處理哪些資訊、為什麼處理以及你的權利。
 
@@ -199,6 +201,7 @@ If these terms change significantly, the App will ask you to read and agree to t
 
 以下許可權都只在你使用相關功能時才會請求，你可以拒絕，也可以隨時在系統"設定"裡關閉，關閉後不影響其他功能：
 
+• 日曆：你點「從日曆新增」時使用，讀取未來半年的日程供你選擇，選中的時間填到搶購活動裡。只在手機上讀取，不會上傳。
 • 相機：你掃描二維碼新增搶購活動時使用，也可以在設定頭像時拍照。畫面只在手機上識別，不會上傳。
 • 相簿：你從相簿選二維碼圖片或頭像時使用，選中的圖片只在本機處理和儲存。
 • 通知：用於開搶前的提醒，提醒在本機安排，不經過網路。
@@ -240,7 +243,7 @@ If these terms change significantly, the App will ask you to read and agree to t
     static let termsHant = """
 **卡點 使用者協議**
 
-更新日期：2026 年 11 月 1 日
+更新日期：2026 年 11 月 2 日
 
 歡迎使用卡點（以下簡稱"本 App"）。本 App 由個人開發者 lang qin 開發和運營。使用本 App 前請仔細閱讀本協議，點"同意並繼續"或繼續使用即表示你同意本協議。
 

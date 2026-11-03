@@ -115,6 +115,7 @@ targets:
         NSFaceIDUsageDescription: {perm.get('faceId', '')}
         NSPhotoLibraryUsageDescription: {perm.get('photos', '')}
         NSCameraUsageDescription: {perm.get('camera', '')}
+        NSCalendarsFullAccessUsageDescription: {perm.get('calendars', '')}
         UIAppFonts:{fontlines}
     entitlements:
       path: App/App.entitlements
@@ -169,9 +170,9 @@ targets:
 # ---------- InfoPlist.strings ----------
 def ip(lang, d):
     return ''.join(f'"{k}" = "{sw(v)}";\n' for k, v in d.items())
-w('iOS/App/Localized/zh-Hans.lproj/InfoPlist.strings', ip('zh-Hans', {"CFBundleDisplayName": name, "NSFaceIDUsageDescription": perm.get('faceId', ''), "NSPhotoLibraryUsageDescription": perm.get('photos', ''), "NSCameraUsageDescription": perm.get('camera', '')}))
-w('iOS/App/Localized/zh-Hant.lproj/InfoPlist.strings', ip('zh-Hant', {"CFBundleDisplayName": nameHant, "NSFaceIDUsageDescription": hant(perm.get('faceId', '')), "NSPhotoLibraryUsageDescription": hant(perm.get('photos', '')), "NSCameraUsageDescription": hant(perm.get('camera', ''))}))
-w('iOS/App/Localized/en.lproj/InfoPlist.strings', ip('en', {"CFBundleDisplayName": nameEn, "NSFaceIDUsageDescription": perm.get('faceIdEn', ''), "NSPhotoLibraryUsageDescription": perm.get('photosEn', ''), "NSCameraUsageDescription": perm.get('cameraEn', '')}))
+w('iOS/App/Localized/zh-Hans.lproj/InfoPlist.strings', ip('zh-Hans', {"CFBundleDisplayName": name, "NSCalendarsFullAccessUsageDescription": perm.get('calendars', ''), "NSFaceIDUsageDescription": perm.get('faceId', ''), "NSPhotoLibraryUsageDescription": perm.get('photos', ''), "NSCameraUsageDescription": perm.get('camera', '')}))
+w('iOS/App/Localized/zh-Hant.lproj/InfoPlist.strings', ip('zh-Hant', {"CFBundleDisplayName": nameHant, "NSCalendarsFullAccessUsageDescription": hant(perm.get('calendars', '')), "NSFaceIDUsageDescription": hant(perm.get('faceId', '')), "NSPhotoLibraryUsageDescription": hant(perm.get('photos', '')), "NSCameraUsageDescription": hant(perm.get('camera', ''))}))
+w('iOS/App/Localized/en.lproj/InfoPlist.strings', ip('en', {"CFBundleDisplayName": nameEn, "NSCalendarsFullAccessUsageDescription": perm.get('calendarsEn', ''), "NSFaceIDUsageDescription": perm.get('faceIdEn', ''), "NSPhotoLibraryUsageDescription": perm.get('photosEn', ''), "NSCameraUsageDescription": perm.get('cameraEn', '')}))
 for lang, n in (('zh-Hans', name), ('zh-Hant', nameHant), ('en', nameEn)):
     w(f'iOS/Widget/Localized/{lang}.lproj/InfoPlist.strings', ip(lang, {"CFBundleDisplayName": n}))
 

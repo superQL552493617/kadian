@@ -13,6 +13,7 @@ The App requires no sign-up or login and has no servers of its own. The sale eve
 
 The following permissions are requested only when you use the related feature. You can decline them or turn them off anytime in the system Settings; other features keep working:
 
+• Calendar: used when you tap “From calendar”. It reads your events for the next six months so you can choose one, and fills its time into the sale. It stays on your phone and is never uploaded.
 • Camera: used when you scan a QR code to add a sale event, or take a photo for your avatar. The image is read on your phone and never uploaded.
 • Photos: used when you choose a QR code image or an avatar. The selected image is processed and stored only on your device.
 • Notifications: used for reminders before a sale starts. Reminders are scheduled on your device without going through the network.
