@@ -85,8 +85,8 @@ final class LinkReader: NSObject, WKNavigationDelegate {
     var els=document.querySelectorAll('h1,h2,h3,[class*=title],[class*=Title],[class*=name],[class*=Name]');
     for(var i=0;i<els.length&&i<200;i++){var e=els[i],s=(e.innerText||'').trim();if(s.length<4||s.length>80||s.indexOf('\\n')>=0)continue;
     var r=e.getBoundingClientRect();if(r.height===0||r.top>innerHeight)continue;var f=parseFloat(getComputedStyle(e).fontSize)||0;if(f>bs){bs=f;best=s}}
-    var item='',cap=window.__kdCap||[];for(var c=0;c<cap.length;c++){if(cap[c].src.indexOf('item.detail.getdetail')<0)continue;var m=/"itemName":"([^"\\\\]+)"/.exec(cap[c].body);if(m){item=m[1];break}}
-    return JSON.stringify({title:document.title||'',og:og?(og.content||''):'',head:best,item:item,text:t.slice(0,8000),href:location.href})})()
+    var item='',sell=0,cap=window.__kdCap||[];for(var c=0;c<cap.length;c++){if(cap[c].src.indexOf('item.detail.getdetail')<0)continue;var m=/"itemName":"([^"\\\\]+)"/.exec(cap[c].body);if(m){item=m[1];var w=/"sellStartTime":"?(\\d{13})/.exec(cap[c].body);if(w)sell=+w[1];break}}
+    return JSON.stringify({title:document.title||'',og:og?(og.content||''):'',head:best,item:item,sell:sell,text:t.slice(0,8000),href:location.href})})()
     """
 
     private func poll() {
@@ -122,7 +122,9 @@ final class LinkReader: NSObject, WKNavigationDelegate {
         let item = last["item"] as? String ?? ""
         let head = item.isEmpty ? (last["head"] as? String ?? "") : item, og = last["og"] as? String ?? "", title = last["title"] as? String ?? ""
         let text = last["text"] as? String ?? ""
-        return ["head": head, "og": og, "title": title, "text": blocked ? "" : text, "blocked": blocked]
+        // sell 是大麦数据里明确的开抢字段（sellStartTime，毫秒）。有些场次不是第一轮，没有这个字段，就留空，不猜
+        let sell = (last["sell"] as? NSNumber)?.doubleValue ?? 0
+        return ["head": head, "og": og, "title": title, "text": blocked ? "" : text, "blocked": blocked, "sell": blocked ? 0 : sell]
     }
 
     private func finish(_ r: [String: Any]) {
@@ -136,7 +138,7 @@ final class LinkReader: NSObject, WKNavigationDelegate {
             let b = t.index(rg.upperBound, offsetBy: 30, limitedBy: t.endIndex) ?? t.endIndex
             near = String(t[a..<b]).replacingOccurrences(of: "\n", with: " ")
         }
-        Diag.add("读链接 \(host) \(ms)ms 被拦\(r["blocked"] as? Bool ?? false) 标题「\(last["title"] as? String ?? "")」大字「\(last["head"] as? String ?? "")」文字\(t.count)字 开抢附近「\(near)」")
+        Diag.add("读链接 \(host) \(ms)ms 被拦\(r["blocked"] as? Bool ?? false) 标题「\(last["title"] as? String ?? "")」大字「\(last["head"] as? String ?? "")」开抢字段\(Int((last["sell"] as? NSNumber)?.doubleValue ?? 0)) 文字\(t.count)字 开抢附近「\(near)」")
         web?.stopLoading()
         web?.navigationDelegate = nil
         web?.removeFromSuperview()

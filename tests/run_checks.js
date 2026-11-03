@@ -9,7 +9,7 @@ const RES={zh:/习惯|打卡|日志|笔记|会员|订阅|读书|运动|单词|VI
 async function open(b,o={}){const c=await b.newContext({viewport:o.small?{width:375,height:667}:{width:390,height:844},deviceScaleFactor:2,hasTouch:!!o.touch,timezoneId:'Asia/Shanghai',colorScheme:o.dark?'dark':'light',locale:'zh-CN'});
 const p=await c.newPage();p.errs=[];p.native=[];p.on('pageerror',e=>p.errs.push(e.message));
 await p.exposeFunction('__rec',m=>{p.native.push(m)});
-if(o.app)await p.addInitScript(()=>{window.__XM_NATIVE__=true;window.__XM_SPLASH_DONE=true;window.webkit={messageHandlers:{native:{postMessage:m=>{window.__rec(JSON.parse(JSON.stringify(m)));if(m.cmd==='live')return Promise.resolve(window.__liveRes);return Promise.resolve(null)}}}}});
+if(o.app)await p.addInitScript(()=>{window.__XM_NATIVE__=true;window.__XM_SPLASH_DONE=true;window.webkit={messageHandlers:{native:{postMessage:m=>{window.__rec(JSON.parse(JSON.stringify(m)));if(m.cmd==='live')return Promise.resolve(window.__liveRes);if(m.cmd==='linkinfo')return Promise.resolve(window.__linkRes||null);return Promise.resolve(null)}}}}});
 if(o.lang)await p.addInitScript(l=>{try{localStorage.setItem('xm-lang',l)}catch(e){}},o.lang);
 await p.goto(URL_);await p.waitForFunction(()=>typeof S!=='undefined'&&S&&document.querySelector('#view'));
 if(!o.guide)await p.evaluate(()=>{S.prefs.guided=true;S.prefs.agreed=POLICY_VER;save();document.querySelectorAll('.gd,.pc').forEach(x=>x.remove())});
@@ -60,6 +60,9 @@ p=await open(b);await p.evaluate(()=>goPage('me'));await p.waitForTimeout(100);t
 p=await open(b);await p.evaluate(()=>goPage('me'));await p.waitForTimeout(80);await p.evaluate(()=>openPageSheet('personal'));await p.waitForTimeout(350);t=await p.evaluate(()=>document.body.innerText);ck('Q07 个性化没有配色板入口、完成音效',!/配色板|完成音效/.test(t)&&/主题/.test(t));await shot(p,'Q07_个性化');await p.context().close();
 /* ---- Q11 灵动岛 ---- */
 /* ---- Q16 演练悬浮时钟 ---- */
+/* ---- G4 大麦开抢字段 ---- */
+p=await open(b,{app:true});await p.evaluate(()=>{window.__linkRes={head:'【镇江】某演唱会-镇江站',title:'商品详情',text:'该渠道不支持购票',sell:Date.now()+864e5,blocked:false}});await p.click('#kdAdd');await p.waitForSelector('.sheet.ie');await p.evaluate(()=>{const el=document.querySelector('#ieLink');el.value='https://m.damai.cn/shows/item.html?itemId=1';el.dispatchEvent(new Event('paste'))});await p.waitForSelector('#lrOk');st=await p.evaluate(()=>document.querySelector('.kd-lr-t').textContent);ck('G4-5 开抢字段先弹结果',/\d\d:\d\d:\d\d/.test(st),st);await p.click('#lrOk');await p.waitForTimeout(80);r=await ie(p);ck('G4-5 点填入后填上名称和时间',r.name==='【镇江】某演唱会-镇江站'&&!!r.time,JSON.stringify(r));await p.context().close();
+p=await open(b,{app:true});await p.evaluate(()=>{window.__linkRes={head:'温馨提示',og:'',title:'商品详情',text:'该渠道不支持购票',sell:0}});await p.click('#kdAdd');await p.waitForSelector('.sheet.ie');await p.evaluate(()=>{const el=document.querySelector('#ieLink');el.value='https://m.damai.cn/shows/item.html?itemId=1';el.dispatchEvent(new Event('paste'))});await p.waitForTimeout(200);st=await p.evaluate(()=>({pop:!!document.querySelector('#lrOk'),t:document.querySelector('.sheet.ie').innerText}));ck('G4-5 只有平台提示页时不弹假结果',!st.pop&&/读不到开抢时间/.test(st.t));await p.context().close();
 /* ---- G4 第一轮：首页只有日程、每场同样大小、微调 0.5 秒、没有演练 ---- */
 p=await open(b);await seed(p,[{name:'甲',src:'damai',in:3600e3},{name:'乙',src:'taobao',in:7200e3},{name:'丙',src:'jd',in:9000e3}]);await p.waitForTimeout(150);
 st=await p.evaluate(()=>{const c=[...document.querySelectorAll('.kd-next .kd-ncd')].map(x=>getComputedStyle(x).fontSize);return {n:c.length,same:new Set(c).size===1,clock:!!document.querySelector('.kd-clock,#kdSrcBtn'),drill:!!document.querySelector('#kdDrill')}});
