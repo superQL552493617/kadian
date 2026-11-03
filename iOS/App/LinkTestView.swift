@@ -11,6 +11,8 @@ import WebKit
 @MainActor
 final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
     @Published var link = "https://m.damai.cn/shows/item.html?itemId=1082769026036"
+    /// 要在数据里搜的时间（大麦 App 上看到的开抢时间），格式 11-03 12:00
+    @Published var want = "11-03 12:00"
     @Published var title = ""
     @Published var saleTime = ""
     @Published var status = "未开始"
@@ -79,6 +81,40 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
         read(1, runId)
     }
 
+    /// 把「11-03 12:00」展开成数据里可能出现的各种写法
+    private func wantForms() -> [String] {
+        let p = want.split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }
+        guard p.count >= 4 else { return [] }
+        let (mo, d, h, mi) = (p[0], p[1], p[2], p[3])
+        var c = DateComponents(); c.year = Calendar.current.component(.year, from: Date()); c.month = mo; c.day = d; c.hour = h; c.minute = mi
+        var out = [String(format: "%d月%d日", mo, d), String(format: "%02d月%02d日", mo, d), String(format: "%d-%02d-%02d", c.year ?? 0, mo, d), String(format: "%d.%02d.%02d", c.year ?? 0, mo, d), String(format: "%02d-%02d %02d:%02d", mo, d, h, mi), String(format: "%02d.%02d %02d:%02d", mo, d, h, mi)]
+        if let t = Calendar.current.date(from: c)?.timeIntervalSince1970 { out += [String(Int(t) * 1000), String(Int(t))] }
+        return out
+    }
+
+    private func search(_ list: [[String: Any]]) {
+        let forms = wantForms()
+        add("===== 搜 \(want)，共 \(forms.count) 种写法，\(list.count) 条数据")
+        var hits = 0
+        var sources = list
+        sources.append(["src": "页面文字", "body": pageAll])
+        for c in sources {
+            let src = String((c["src"] as? String ?? "").split(separator: "/").suffix(2).first ?? "?"), ns = (c["body"] as? String ?? "") as NSString
+            for f in forms {
+                var at = NSRange(location: 0, length: ns.length), n = 0
+                while n < 4 {
+                    let m = ns.range(of: f, options: [], range: at)
+                    if m.location == NSNotFound { break }
+                    let a = max(0, m.location - 70), b = min(ns.length, m.location + m.length + 40)
+                    add("命中【\(src)】\(f)：…\(ns.substring(with: NSRange(location: a, length: b - a)).replacingOccurrences(of: "\n", with: " "))…")
+                    hits += 1; n += 1
+                    at = NSRange(location: m.location + m.length, length: ns.length - m.location - m.length)
+                }
+            }
+        }
+        add("===== 共命中 \(hits) 处")
+    }
+
     /// 列出数据里所有像时间的字段（只给老板和开发判断哪个是开抢时间，这里不猜）
     private static func timeFields(_ body: String) -> [String] {
         guard let re = try? NSRegularExpression(pattern: #"\\*"([A-Za-z_][A-Za-z0-9_]*)\\*"\s*:\s*\\*"?([^,"\\}\]]{1,40})"#) else { return [] }
@@ -103,6 +139,7 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
         web.evaluateJavaScript("JSON.stringify(window.__kdCap||[])") { [weak self] res, _ in
             guard let self, id == self.runId else { return }
             let list = (res as? String).flatMap { $0.data(using: .utf8) }.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [[String: Any]] } ?? []
+            self.search(list)
             for c in list {
                 let src = c["src"] as? String ?? "", body = c["body"] as? String ?? ""
                 guard src.contains("mtop") else { continue }
@@ -178,6 +215,10 @@ struct LinkTestView: View {
             HStack {
                 TextField("粘贴大麦链接", text: $m.link).textFieldStyle(.roundedBorder).autocorrectionDisabled().textInputAutocapitalization(.never)
                 Button("粘贴") { m.link = UIPasteboard.general.string ?? "" }
+            }
+            HStack {
+                Text("要搜的时间").font(.subheadline)
+                TextField("11-03 12:00", text: $m.want).textFieldStyle(.roundedBorder).keyboardType(.numbersAndPunctuation)
             }
             HStack {
                 Button("开始识别") { m.start() }.buttonStyle(.borderedProminent)
