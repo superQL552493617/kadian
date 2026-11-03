@@ -56,14 +56,27 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private var subColor = UIColor.gray, pillColor = UIColor.white, lineColor = UIColor.lightGray
 
     private var resignObs: NSObjectProtocol?
+    private var activeObs: NSObjectProtocol?
+    /// 回到卡点时系统或我们把窗口收起：这不算关闭
+    private var hidingForApp = false
 
-    /// 退出 App 时再开一次。系统的自动开启不一定触发，这里补上
-    private func watchResign() {
-        guard resignObs == nil else { return }
-        resignObs = NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
-            guard let self, self.active, let c = self.controller, !c.isPictureInPictureActive else { return }
-            Diag.add("悬浮窗 退出 App 时自动再开")
-            c.startPictureInPicture()
+    private func watchLifecycle() {
+        if resignObs == nil {
+            // 系统的自动开启不一定触发，退出时补一次
+            resignObs = NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+                guard let self, self.active, let c = self.controller, !c.isPictureInPictureActive else { return }
+                Diag.add("悬浮窗 退出卡点，系统说可以开=\(c.isPictureInPicturePossible)")
+                self.callVC?.view.alpha = 1
+                c.startPictureInPicture()
+            }
+        }
+        if activeObs == nil {
+            activeObs = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+                guard let self, self.active, let c = self.controller, c.isPictureInPictureActive else { return }
+                Diag.add("悬浮窗 回到卡点，收起")
+                self.hidingForApp = true
+                c.stopPictureInPicture()
+            }
         }
     }
 
@@ -122,10 +135,13 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         SFX.sessionLocked = true
         guard prepare(call: true) else { cleanup(); done(false); return }
         byUser = false
-        pending = done
+        // 老板 2026-11-03：卡点里不显示悬浮窗，退出卡点才出现。这里只准备好，点按钮马上算开启
+        active = true
         restartTimer()
         tick()
-        begin(fallback: true)
+        watchLifecycle()
+        Diag.add("悬浮窗 已准备，退出卡点时出现，系统说可以开=\(controller?.isPictureInPicturePossible ?? false)")
+        done(true)
     }
 
     /// 系统说「可以开」了再开；通话式开不起来就退回普通画中画（有快退快进按钮），再不行才算失败
@@ -177,7 +193,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         let l = AVSampleBufferDisplayLayer()
         l.frame = v.bounds
         l.videoGravity = .resizeAspectFill
-        win.insertSubview(v, at: 0) // 放在页面底下，用户看不到，但必须在窗口里
+        v.backgroundColor = .clear
+        win.addSubview(v) // 透明不挡点击。放页面底下时系统不肯自动开，放最上面试
         host = v
         layer = l
         let src: AVPictureInPictureController.ContentSource
@@ -200,21 +217,6 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         c.canStartPictureInPictureAutomaticallyFromInline = true
         controller = c
         return true
-    }
-
-    /// 回到 App 不算关闭：录屏证明退出时再开不起来，所以回到 App 后马上重开，退出时它已经在了
-    private func reopen(tries: Int) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
-            guard let self, self.active, let c = self.controller, !c.isPictureInPictureActive else { return }
-            if c.isPictureInPicturePossible {
-                self.callVC?.view.alpha = 1
-                c.startPictureInPicture()
-            } else if tries > 1 {
-                self.reopen(tries: tries - 1)
-            } else {
-                Diag.add("悬浮窗 重开失败：系统说现在不能开")
-            }
-        }
     }
 
     private func cleanup() {
@@ -488,7 +490,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     func pictureInPictureControllerDidStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
         active = true
         starting = false
-        watchResign()
+        Diag.add("悬浮窗 显示了")
         if stopAfterStart {
             stopAfterStart = false
             pending?(true); pending = nil
@@ -500,15 +502,16 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, failedToStartPictureInPictureWithError error: Error) {
         starting = false
+        Diag.add("悬浮窗 开启失败：\(error.localizedDescription)")
         if stopAfterStart { stopAfterStart = false; cleanup(); return }
-        startFailed(fallback: true, why: "开启失败：\(error.localizedDescription)")
+        // 退出时开不起来不算关闭，下次退出再试
     }
 
     func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
-        if restoring {
+        if restoring || hidingForApp {
             restoring = false
-            Diag.add("悬浮窗 回到 App，马上重开")
-            reopen(tries: 3)
+            hidingForApp = false
+            callVC?.view.alpha = 1
             return
         }
         let user = byUser

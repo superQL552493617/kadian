@@ -248,6 +248,7 @@ struct LinkTestView: View {
             Text("开抢时间：\(m.saleTime)").font(.subheadline)
             Text("状态：\(m.status)").font(.subheadline.weight(.semibold))
             Button("测一遍时间源") { m.testTimeSources() }.buttonStyle(.bordered)
+            Button("复制悬浮窗记录") { UIPasteboard.general.string = Diag.text }.buttonStyle(.bordered)
             Button(copied ? "已复制，去聊天里粘贴" : "复制日志") {
                 UIPasteboard.general.string = m.log.joined(separator: "\n")
                 copied = true
