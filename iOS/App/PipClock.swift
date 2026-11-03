@@ -34,7 +34,9 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private var pending: ((Bool) -> Void)?
     private var lastBeep: Int?
     /// 后面几场（JS 在后台不运行，所以提前交过来，到点后原生自己换下一场）
-    private var targets: [(at: Double, label: String)] = []
+    private var targets: [(at: Double, label: String, name: String, when: String)] = []
+    private var targetName = "", targetWhen = "", cdLabel = "倒计时", whenLabel = "开抢时间"
+    private var subColor = UIColor.gray, pillColor = UIColor.white, lineColor = UIColor.lightGray
 
     // MARK: 命令
 
@@ -58,10 +60,17 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         if let v = b["al"] as? String { alColor = Self.color(v) ?? alColor }
         if let v = (b["target"] as? NSNumber)?.doubleValue { target = v }
         if let v = b["targetLabel"] as? String { targetLabel = v }
+        if let v = b["targetName"] as? String { targetName = v }
+        if let v = b["targetWhen"] as? String { targetWhen = v }
+        if let v = b["cdLabel"] as? String { cdLabel = v }
+        if let v = b["whenLabel"] as? String { whenLabel = v }
+        if let v = b["sub"] as? String { subColor = Self.color(v) ?? subColor }
+        if let v = b["pill"] as? String { pillColor = Self.color(v) ?? pillColor }
+        if let v = b["line"] as? String { lineColor = Self.color(v) ?? lineColor }
         if let v = b["targets"] as? [[String: Any]] {
             targets = v.compactMap { d in
                 guard let a = (d["at"] as? NSNumber)?.doubleValue else { return nil }
-                return (a, d["label"] as? String ?? "")
+                return (a, d["label"] as? String ?? "", d["name"] as? String ?? "", d["when"] as? String ?? "")
             }
         }
         if let v = b["firedLabel"] as? String { firedLabel = v }
@@ -156,18 +165,19 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     // MARK: 每一帧
 
-    private struct View { var main = "", ms = "", small = "", alert = false }
+    private struct View { var main = "", ms = "", small = "", alert = false, card = false }
 
     private func compute(_ now: Double) -> View {
         // 上一场到点超过 60 秒，换下一场
         if let n = targets.first(where: { $0.at - now > -60_000 }), n.at != target {
-            target = n.at; targetLabel = n.label; lastBeep = nil
+            target = n.at; targetLabel = n.label; targetName = n.name; targetWhen = n.when; lastBeep = nil
         }
         let left: Double? = target > 0 ? target - now : nil
         var v = View()
         v.alert = left.map { alertSec > 0 && $0 > 0 && $0 <= Double(alertSec) * 1000 } ?? false
         if mode == "cd", let l = left, l > -60_000 {
             v.small = targetLabel
+            v.card = true
             if l <= 0 {
                 v.main = "\(firedLabel) +\(String(format: "%.1f", -l / 1000))\(secUnit)"
                 return v
@@ -197,7 +207,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         let now = Date().timeIntervalSince1970 * 1000
         beepIfNeeded(now)
         let v = compute(now)
-        let key = "\(v.main)|\(v.ms)|\(v.small)|\(v.alert)|\(shape)"
+        let key = "\(v.main)|\(v.ms)|\(v.small)|\(v.alert)|\(shape)|\(targetName)|\(targetWhen)"
         guard key != lastKey || now - lastEnqueue > 500 else { return }
         guard let l = layer else { return }
         if l.status == .failed { l.flush() }
@@ -221,7 +231,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         switch shape {
         case "slim": return CGSize(width: 720, height: 160)
         case "thin": return CGSize(width: 720, height: 120)
-        default: return CGSize(width: 720, height: 240) // 老板试过 2:1 太大，改 3:1。比例越扁，系统给的窗口越矮
+        default: return CGSize(width: 828, height: 360) // 样式 A 插画卡（老板 2026-11-02 选定），比例 2.3:1
         }
     }
 
@@ -273,6 +283,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private func draw(_ v: View, size: CGSize, ctx: CGContext) {
         ctx.setFillColor(bg.cgColor)
         ctx.fill(CGRect(origin: .zero, size: size))
+        if shape != "slim" && shape != "thin" && v.card { drawCard(v, size: size, ctx: ctx); return }
         let main = v.alert ? alColor : fg
         let msC = v.alert ? alColor : msColor
         let showSmall = shape != "thin"
@@ -312,7 +323,63 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         }
     }
 
-    /// #RRGGBB 或 rgba(r,g,b,a)。视频帧不能透明，一律不透明
+    /// 样式 A：名称 + 倒计时 + 开抢时间框 + 卡点自己画的小秒表
+    private func drawCard(_ v: View, size: CGSize, ctx: CGContext) {
+        let w = size.width, h = size.height, pad = w * 0.05
+        let ink = v.alert ? alColor : fg
+        // 秒表
+        let dark = lumi(bg) < 0.3
+        let m = h * 0.34, mx = w - pad - m, my = h * 0.05, u = m / 100
+        let face = CGRect(x: mx + 14 * u, y: my + 22 * u, width: 72 * u, height: 72 * u)
+        ctx.setFillColor(fg.cgColor)
+        UIBezierPath(roundedRect: CGRect(x: mx + 41 * u, y: my + 4 * u, width: 18 * u, height: 10 * u), cornerRadius: 4 * u).fill()
+        ctx.fill(CGRect(x: mx + 46 * u, y: my + 12 * u, width: 8 * u, height: 10 * u))
+        ctx.setStrokeColor(fg.cgColor); ctx.setLineCap(.round); ctx.setLineWidth(7 * u)
+        ctx.move(to: CGPoint(x: mx + 78 * u, y: my + 20 * u)); ctx.addLine(to: CGPoint(x: mx + 86 * u, y: my + 28 * u)); ctx.strokePath()
+        ctx.setFillColor(UIColor.white.cgColor); ctx.fillEllipse(in: face)
+        ctx.setLineWidth(6 * u); ctx.strokeEllipse(in: face)
+        let feat = dark ? UIColor(red: 0.06, green: 0.07, blue: 0.08, alpha: 1) : fg
+        ctx.setFillColor(feat.cgColor)
+        for x in [38.0, 62.0] { ctx.fillEllipse(in: CGRect(x: mx + (x - 4.5) * u, y: my + 49.5 * u, width: 9 * u, height: 9 * u)) }
+        ctx.setStrokeColor(feat.cgColor); ctx.setLineWidth(4 * u)
+        ctx.move(to: CGPoint(x: mx + 43 * u, y: my + 66 * u)); ctx.addQuadCurve(to: CGPoint(x: mx + 57 * u, y: my + 66 * u), control: CGPoint(x: mx + 50 * u, y: my + 73 * u)); ctx.strokePath()
+        ctx.setFillColor(msColor.withAlphaComponent(0.55).cgColor)
+        for x in [30.0, 70.0] { ctx.fillEllipse(in: CGRect(x: mx + (x - 5) * u, y: my + 59 * u, width: 10 * u, height: 10 * u)) }
+        // 名称
+        let para = NSMutableParagraphStyle(); para.lineBreakMode = .byTruncatingTail
+        NSAttributedString(string: targetName, attributes: [.font: UIFont.systemFont(ofSize: h * 0.1, weight: .bold), .foregroundColor: ink, .paragraphStyle: para])
+            .draw(with: CGRect(x: pad, y: h * 0.09, width: mx - pad - w * 0.02, height: h * 0.14), options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], context: nil)
+        // 开抢时间框
+        let pw = w * 0.25, ph = h * 0.33, px = w - pw - w * 0.04, py = h - ph - h * 0.08
+        let box = UIBezierPath(roundedRect: CGRect(x: px, y: py, width: pw, height: ph), cornerRadius: h * 0.07)
+        pillColor.setFill(); box.fill()
+        lineColor.setStroke(); box.lineWidth = 2; box.stroke()
+        let center = NSMutableParagraphStyle(); center.alignment = .center; center.lineBreakMode = .byTruncatingTail
+        NSAttributedString(string: whenLabel, attributes: [.font: UIFont.systemFont(ofSize: h * 0.06, weight: .medium), .foregroundColor: subColor, .paragraphStyle: center])
+            .draw(in: CGRect(x: px + 6, y: py + ph * 0.14, width: pw - 12, height: ph * 0.34))
+        NSAttributedString(string: targetWhen, attributes: [.font: UIFont.systemFont(ofSize: h * 0.075, weight: .bold), .foregroundColor: ink, .paragraphStyle: center])
+            .draw(in: CGRect(x: px + 6, y: py + ph * 0.5, width: pw - 12, height: ph * 0.4))
+        // 倒计时
+        NSAttributedString(string: cdLabel, attributes: [.font: UIFont.systemFont(ofSize: h * 0.065, weight: .regular), .foregroundColor: subColor]).draw(at: CGPoint(x: pad, y: h * 0.56))
+        let avail = px - pad - w * 0.02
+        func num(_ p: CGFloat) -> NSAttributedString {
+            let s = NSMutableAttributedString(string: v.main, attributes: [.font: UIFont.monospacedSystemFont(ofSize: p, weight: .bold), .foregroundColor: ink])
+            if !v.ms.isEmpty { s.append(NSAttributedString(string: v.ms, attributes: [.font: UIFont.monospacedSystemFont(ofSize: p * 0.72, weight: .bold), .foregroundColor: v.alert ? alColor : msColor])) }
+            return s
+        }
+        var pt = h * 0.21
+        var t = num(pt)
+        if t.size().width > avail { pt *= avail / t.size().width; t = num(pt) }
+        t.draw(at: CGPoint(x: pad, y: h * 0.92 - t.size().height))
+    }
+
+    private func lumi(_ c: UIColor) -> CGFloat {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        c.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return 0.3 * r + 0.59 * g + 0.11 * b
+    }
+
+    /// #RRGGBB 或 rgba(r,g,b,a)
     static func color(_ s: String) -> UIColor? {
         let t = s.trimmingCharacters(in: .whitespaces)
         if t.hasPrefix("#"), t.count == 7, let v = UInt32(t.dropFirst(), radix: 16) {
@@ -320,7 +387,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         }
         if t.hasPrefix("rgb"), let a = t.firstIndex(of: "("), let b = t.firstIndex(of: ")") {
             let p = t[t.index(after: a)..<b].split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
-            if p.count >= 3 { return UIColor(red: p[0] / 255, green: p[1] / 255, blue: p[2] / 255, alpha: 1) }
+            if p.count >= 3 { return UIColor(red: p[0] / 255, green: p[1] / 255, blue: p[2] / 255, alpha: p.count >= 4 ? p[3] : 1) }
         }
         return nil
     }
