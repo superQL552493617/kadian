@@ -1,0 +1,29 @@
+{
+  "bundleIds": {
+    "site.xiaomanhabit.kadian": {
+      "status": "exists",
+      "id": "428LJ8VR44",
+      "seedId": "FUWHR5TSWG"
+    },
+    "site.xiaomanhabit.kadian.widget": {
+      "status": "exists",
+      "id": "3CVWFNFR6C",
+      "seedId": "FUWHR5TSWG"
+    }
+  },
+  "certificate": null,
+  "profiles": {
+    "site.xiaomanhabit.kadian": {
+      "status": "created",
+      "name": "AppStore site.xiaomanhabit.kadian",
+      "uuid": "db2a77a7-fb70-4a83-ba5a-57e0cece0629",
+      "file": "site.xiaomanhabit.kadian.mobileprovision"
+    },
+    "site.xiaomanhabit.kadian.widget": {
+      "status": "created",
+      "name": "AppStore site.xiaomanhabit.kadian.widget",
+      "uuid": "7dc196c2-f335-46ae-ae1c-5c1d4ac09cc4",
+      "file": "site.xiaomanhabit.kadian.widget.mobileprovision"
+    }
+  }
+}
