@@ -13838,7 +13838,7 @@ if(!segs.length)return '';let b=segs.reduce((a,s)=>s.length>a.length?s:a,'');con
 /* App 里由原生读平台的公开页面（cmd:linkinfo，KD-005）；网页预览受浏览器限制读不了 */
 const LINK_BAD_TITLE=/^(商品详情|详情|详情页|大麦|大麦网|淘宝|淘宝网|天猫|京东|猫眼|拼多多|美团|12306|登录|首页|温馨提示|提示|错误|安全验证|验证)$/;
 async function fetchLinkInfo(url){if(IN_APP){const r=await Promise.race([NN({cmd:'linkinfo',url}),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),11000))])||{};
-const title=[r.head,r.og,r.title].map(x=>(x||'').trim()).find(x=>x&&!LINK_BAD_TITLE.test(x))||'';
+const title=[r.head,r.og,r.title].map(x=>(x||'').trim().replace(/\s*【(图片 价格 品牌 评论|网上订票)】\s*-\s*\S+$/,'').replace(/\s*[-_|]\s*(京东|大麦网|淘宝网|天猫|猫眼|拼多多|美团)$/,'')).find(x=>x&&!LINK_BAD_TITLE.test(x))||'';
 return {title,at:+r.sell>0?+r.sell:r.text?parseSaleTime(r.text):null,blocked:!!r.blocked}}
 if(PV.linkSim){await new Promise(f=>setTimeout(f,500));const d=new Date(Date.now()+864e5);d.setHours(12,0,0,0);return {title:'模拟读到的活动（预览）',at:+d}}throw new Error('preview')}
 

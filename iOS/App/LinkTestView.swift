@@ -26,6 +26,8 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
         let cfg = WKWebViewConfiguration()
         cfg.websiteDataStore = .nonPersistent()
         cfg.mediaTypesRequiringUserActionForPlayback = .all
+        // 测试页记下页面收到的全部数据，不只是含关键字的，否则搜不到不能说明什么
+        cfg.userContentController.addUserScript(WKUserScript(source: "window.__kdAll=1;", injectionTime: .atDocumentStart, forMainFrameOnly: true))
         cfg.userContentController.addUserScript(WKUserScript(source: Self.capture, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         web = WKWebView(frame: .zero, configuration: cfg)
         web.customUserAgent = LinkReader.safariUA
@@ -155,8 +157,9 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
             for c in list {
                 let src = c["src"] as? String ?? "", body = c["body"] as? String ?? ""
                 if src.contains("subpage") { self.add("【subpage】\(body.count) 字：\(String(body.prefix(500)))") }
-                if src.contains("alicdn") || src.contains("alilog") { continue }
-                self.add("【\(src.split(separator: "/").suffix(2).first ?? "")】\(body.count) 字")
+                self.add("【\(src.isEmpty ? "?" : src)】\(body.count) 字")
+                // 只对平台接口列时间字段；内嵌脚本和统计脚本全是旧配置，列出来只是干扰
+                guard src.contains("mtop") || src.contains("api.") else { continue }
                 for t in Self.timeFields(body) { self.add("  \(t)") }
                 for sn in Self.snippets(body, "开抢|开售|开票|开卖") { self.add("  文字：…\(sn)…") }
                 let ns = body as NSString, fl = ns.range(of: "flashSaleEndTime")
