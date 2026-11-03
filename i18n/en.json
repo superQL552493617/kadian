@@ -2483,5 +2483,6 @@
 "在首页卡片上按 0.5 秒加减。加是提前到点，减是推迟到点，只影响这一场的倒计时，不影响提醒。": "Adjust by 0.5 s on the home card. + reaches zero earlier, − later. It affects only this countdown, not reminders.",
 "在首页的每一场上按 0.5 秒加减。加是提前到点，减是推迟到点，只影响这一场的倒计时，不影响提醒。": "Adjust each sale by 0.5 s on the home page. + reaches zero earlier, − later. It affects only this countdown, not reminders.",
 "加提前，减推迟": "+ earlier, − later",
-"这些设置对所有场次都有效。位置和大小由系统决定：可以拖到屏幕边上，也可以双指捏合缩放。": "These settings apply to every sale. The system decides position and size: drag it to an edge or pinch to resize."
+"这些设置对所有场次都有效。位置和大小由系统决定：可以拖到屏幕边上，也可以双指捏合缩放。": "These settings apply to every sale. The system decides position and size: drag it to an edge or pinch to resize.",
+"当前时间": "Current time"
 }

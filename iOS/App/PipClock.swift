@@ -50,7 +50,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private var targetPlat = ""
     private var callVC: PipCallVC?
     private var usedCall = false
-    private var targetName = "", targetWhen = "", cdLabel = "倒计时", whenLabel = "开抢时间"
+    private var targetName = "", targetWhen = "", cdLabel = "倒计时", whenLabel = "开抢时间", nowLabel = "当前时间"
     private var subColor = UIColor.gray, pillColor = UIColor.white, lineColor = UIColor.lightGray
 
     private var resignObs: NSObjectProtocol?
@@ -91,6 +91,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         if let v = b["targetWhen"] as? String { targetWhen = v }
         if let v = b["targetPlat"] as? String { targetPlat = v }
         if let v = b["cdLabel"] as? String { cdLabel = v }
+        if let v = b["nowLabel"] as? String { nowLabel = v }
         if let v = b["whenLabel"] as? String { whenLabel = v }
         if let v = b["sub"] as? String { subColor = Self.color(v) ?? subColor }
         if let v = b["pill"] as? String { pillColor = Self.color(v) ?? pillColor }
@@ -165,8 +166,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private func prepare(call: Bool) -> Bool {
         if controller != nil { return true }
         guard let win = UIApplication.topViewController()?.view.window else { return false }
-        // 来源视图铺满屏幕：回到 App 时窗口直接放大到全屏，退出时从全屏缩小（老板要「扩大特效」）
-        let v = UIView(frame: win.bounds)
+        // 来源视图很小，放在屏幕顶部：回到 App 时窗口往这里收，内容已隐藏，看起来就是直接消失
+        let v = UIView(frame: CGRect(x: win.bounds.midX - 60, y: 60, width: 120, height: 50))
         v.isUserInteractionEnabled = false
         let l = AVSampleBufferDisplayLayer()
         l.frame = v.bounds
@@ -196,6 +197,21 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         return true
     }
 
+    /// 回到 App 不算关闭：录屏证明退出时再开不起来，所以回到 App 后马上重开，退出时它已经在了
+    private func reopen(tries: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+            guard let self, self.active, let c = self.controller, !c.isPictureInPictureActive else { return }
+            if c.isPictureInPicturePossible {
+                self.callVC?.view.alpha = 1
+                c.startPictureInPicture()
+            } else if tries > 1 {
+                self.reopen(tries: tries - 1)
+            } else {
+                Diag.add("悬浮窗 重开失败：系统说现在不能开")
+            }
+        }
+    }
+
     private func cleanup() {
         timer?.cancel(); timer = nil
         possibleObs = nil
@@ -223,7 +239,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     // MARK: 每一帧
 
-    private struct View { var main = "", ms = "", small = "", alert = false, card = false }
+    private struct View { var main = "", ms = "", small = "", alert = false, card = false, clock = false }
 
     private func compute(_ now: Double) -> View {
         // 上一场到点超过 60 秒，换下一场
@@ -252,6 +268,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         v.main = String(format: "%02d:%02d:%02d", c.hour ?? 0, c.minute ?? 0, c.second ?? 0)
         v.ms = Self.msPart(t, msDigits)
         v.small = name
+        v.card = true
+        v.clock = true
         return v
     }
 
@@ -404,24 +422,26 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         ctx.setFillColor(msColor.withAlphaComponent(0.55).cgColor)
         for x in [30.0, 70.0] { ctx.fillEllipse(in: CGRect(x: mx + (x - 5) * u, y: my + 59 * u, width: 10 * u, height: 10 * u)) }
         // 平台
-        NSAttributedString(string: targetPlat, attributes: [.font: UIFont.systemFont(ofSize: h * 0.07, weight: .semibold), .foregroundColor: subColor]).draw(at: CGPoint(x: pad, y: h * 0.07))
+        if !v.clock { NSAttributedString(string: targetPlat, attributes: [.font: UIFont.systemFont(ofSize: h * 0.07, weight: .semibold), .foregroundColor: subColor]).draw(at: CGPoint(x: pad, y: h * 0.07)) }
         // 名称
         let para = NSMutableParagraphStyle(); para.lineBreakMode = .byTruncatingTail
-        NSAttributedString(string: targetName, attributes: [.font: UIFont.systemFont(ofSize: h * 0.1, weight: .bold), .foregroundColor: ink, .paragraphStyle: para])
+        NSAttributedString(string: v.clock ? name : targetName, attributes: [.font: UIFont.systemFont(ofSize: h * 0.1, weight: .bold), .foregroundColor: ink, .paragraphStyle: para])
             .draw(with: CGRect(x: pad, y: h * 0.19, width: mx - pad - w * 0.02, height: h * 0.14), options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], context: nil)
         // 开抢时间框
         let pw = w * 0.25, ph = h * 0.33, px = w - pw - w * 0.04, py = h - ph - h * 0.08
-        let box = UIBezierPath(roundedRect: CGRect(x: px, y: py, width: pw, height: ph), cornerRadius: h * 0.07)
-        pillColor.setFill(); box.fill()
-        lineColor.setStroke(); box.lineWidth = 2; box.stroke()
-        let center = NSMutableParagraphStyle(); center.alignment = .center; center.lineBreakMode = .byTruncatingTail
-        NSAttributedString(string: whenLabel, attributes: [.font: UIFont.systemFont(ofSize: h * 0.06, weight: .medium), .foregroundColor: subColor, .paragraphStyle: center])
-            .draw(in: CGRect(x: px + 6, y: py + ph * 0.14, width: pw - 12, height: ph * 0.34))
-        NSAttributedString(string: targetWhen, attributes: [.font: UIFont.systemFont(ofSize: h * 0.075, weight: .bold), .foregroundColor: ink, .paragraphStyle: center])
-            .draw(in: CGRect(x: px + 6, y: py + ph * 0.5, width: pw - 12, height: ph * 0.4))
+        if !v.clock {
+            let box = UIBezierPath(roundedRect: CGRect(x: px, y: py, width: pw, height: ph), cornerRadius: h * 0.07)
+            pillColor.setFill(); box.fill()
+            lineColor.setStroke(); box.lineWidth = 2; box.stroke()
+            let center = NSMutableParagraphStyle(); center.alignment = .center; center.lineBreakMode = .byTruncatingTail
+            NSAttributedString(string: whenLabel, attributes: [.font: UIFont.systemFont(ofSize: h * 0.06, weight: .medium), .foregroundColor: subColor, .paragraphStyle: center])
+                .draw(in: CGRect(x: px + 6, y: py + ph * 0.14, width: pw - 12, height: ph * 0.34))
+            NSAttributedString(string: targetWhen, attributes: [.font: UIFont.systemFont(ofSize: h * 0.075, weight: .bold), .foregroundColor: ink, .paragraphStyle: center])
+                .draw(in: CGRect(x: px + 6, y: py + ph * 0.5, width: pw - 12, height: ph * 0.4))
+        }
         // 倒计时
-        NSAttributedString(string: cdLabel, attributes: [.font: UIFont.systemFont(ofSize: h * 0.065, weight: .regular), .foregroundColor: subColor]).draw(at: CGPoint(x: pad, y: h * 0.56))
-        let avail = px - pad - w * 0.02
+        NSAttributedString(string: v.clock ? nowLabel : cdLabel, attributes: [.font: UIFont.systemFont(ofSize: h * 0.065, weight: .regular), .foregroundColor: subColor]).draw(at: CGPoint(x: pad, y: h * 0.56))
+        let avail = (v.clock ? w - pad : px) - pad - w * 0.02
         func num(_ p: CGFloat) -> NSAttributedString {
             let s = NSMutableAttributedString(string: v.main, attributes: [.font: UIFont.monospacedSystemFont(ofSize: p, weight: .bold), .foregroundColor: ink])
             if !v.ms.isEmpty { s.append(NSAttributedString(string: v.ms, attributes: [.font: UIFont.monospacedSystemFont(ofSize: p * 0.72, weight: .bold), .foregroundColor: v.alert ? alColor : msColor])) }
@@ -467,7 +487,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
         if restoring {
             restoring = false
-            Diag.add("悬浮窗 回到 App，退出时自动再开")
+            Diag.add("悬浮窗 回到 App，马上重开")
+            reopen(tries: 3)
             return
         }
         let user = byUser
@@ -477,6 +498,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void) {
         restoring = true
+        // 老板要直接切到 App，不要放大和停顿：先把窗口内容藏起来，马上告诉系统界面好了
+        callVC?.view.alpha = 0
         completionHandler(true)
     }
 
