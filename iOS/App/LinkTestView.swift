@@ -10,9 +10,9 @@ import WebKit
 
 @MainActor
 final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
-    @Published var link = "https://m.damai.cn/shows/item.html?itemId=1082769026036"
+    @Published var link = ""
     /// 要在数据里搜的时间（大麦 App 上看到的开抢时间），格式 11-03 12:00
-    @Published var want = "11-03 12:00"
+    @Published var want = ""
     @Published var title = ""
     @Published var saleTime = ""
     @Published var status = "未开始"
@@ -54,12 +54,8 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
         title = ""; saleTime = ""; pageText = ""; pageAll = ""; log = []
         let raw = link.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let urlRange = raw.range(of: "https?://[^\\s，。]+", options: .regularExpression), let url = URL(string: String(raw[urlRange])) else { status = "没找到链接"; return }
-        guard url.host?.lowercased().hasSuffix("damai.cn") == true else { status = "不是大麦链接"; return }
-        guard url.absoluteString.range(of: "itemId=\\d+", options: .regularExpression) != nil else { status = "链接里没有 itemId"; return }
-        guard let r = raw.range(of: "itemId=\\d+", options: .regularExpression) else { return }
-        let id = raw[r].dropFirst("itemId=".count)
-        var stages: [(String, URL, String)] = [("手机网页", url, LinkReader.safariUA)]
-        if let pc = URL(string: "https://detail.damai.cn/item.htm?id=\(id)") { stages.append(("电脑网页", pc, Self.desktopUA)) }
+        guard LinkReader.allowed(url.host) else { status = "不在平台名单里（大麦、淘宝、天猫、京东、猫眼、拼多多、美团、12306）"; return }
+        let stages: [(String, URL, String)] = [("手机网页", url, LinkReader.safariUA)]
         self.stages = stages
         status = "读取中"
         nextStage()
@@ -159,7 +155,7 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
             for c in list {
                 let src = c["src"] as? String ?? "", body = c["body"] as? String ?? ""
                 if src.contains("subpage") { self.add("【subpage】\(body.count) 字：\(String(body.prefix(500)))") }
-                guard src.contains("mtop") else { continue }
+                if src.contains("alicdn") || src.contains("alilog") { continue }
                 self.add("【\(src.split(separator: "/").suffix(2).first ?? "")】\(body.count) 字")
                 for t in Self.timeFields(body) { self.add("  \(t)") }
                 for sn in Self.snippets(body, "开抢|开售|开票|开卖") { self.add("  文字：…\(sn)…") }
@@ -230,12 +226,12 @@ struct LinkTestView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack { Text("读链接测试").font(.headline); Spacer(); Button("关闭") { dismiss() } }
             HStack {
-                TextField("粘贴大麦链接", text: $m.link).textFieldStyle(.roundedBorder).autocorrectionDisabled().textInputAutocapitalization(.never)
+                TextField("粘贴活动链接", text: $m.link).textFieldStyle(.roundedBorder).autocorrectionDisabled().textInputAutocapitalization(.never)
                 Button("粘贴") { m.link = UIPasteboard.general.string ?? "" }
             }
             HStack {
                 Text("要搜的时间").font(.subheadline)
-                TextField("11-03 12:00", text: $m.want).textFieldStyle(.roundedBorder).keyboardType(.numbersAndPunctuation)
+                TextField("App 上的开抢时间，如 11-20 12:00", text: $m.want).textFieldStyle(.roundedBorder).keyboardType(.numbersAndPunctuation)
             }
             HStack {
                 Button("开始识别") { m.start() }.buttonStyle(.borderedProminent)
