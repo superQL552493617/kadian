@@ -517,7 +517,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     }
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void) {
-        restoring = true
+        // 代码关闭时系统也会走这个回调。用户点了关闭就不能当成回到 App，否则关了又自己重开
+        restoring = !byUser
         // 老板要直接切到 App，不要放大和停顿：先把窗口内容藏起来，马上告诉系统界面好了
         callVC?.view.alpha = 0
         completionHandler(true)
