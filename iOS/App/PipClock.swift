@@ -219,9 +219,9 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     private func sizeForShape() -> CGSize {
         switch shape {
-        case "slim": return CGSize(width: 720, height: 180)
+        case "slim": return CGSize(width: 720, height: 160)
         case "thin": return CGSize(width: 720, height: 120)
-        default: return CGSize(width: 720, height: 360) // 老板要大一点：比例越接近方形，系统给的窗口越高
+        default: return CGSize(width: 720, height: 240) // 老板试过 2:1 太大，改 3:1。比例越扁，系统给的窗口越矮
         }
     }
 
@@ -278,7 +278,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         let showSmall = shape != "thin"
         let h = size.height
         // 字号：先按形状定，放不下再缩，数字等宽所以跳动时不抖
-        var pt: CGFloat = shape == "thin" ? h * 0.74 : shape == "slim" ? h * 0.56 : h * 0.46
+        var pt: CGFloat = shape == "thin" ? h * 0.74 : shape == "slim" ? h * 0.54 : h * 0.42
         let padX: CGFloat = 28
         let reserve: CGFloat = shape == "slim" ? size.width * 0.2 : 0
         let avail = size.width - padX * 2 - reserve

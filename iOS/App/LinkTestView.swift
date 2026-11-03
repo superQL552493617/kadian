@@ -58,8 +58,8 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
         guard url.absoluteString.range(of: "itemId=\\d+", options: .regularExpression) != nil else { status = "链接里没有 itemId"; return }
         guard let r = raw.range(of: "itemId=\\d+", options: .regularExpression) else { return }
         let id = raw[r].dropFirst("itemId=".count)
-        _ = id
-        let stages: [(String, URL, String)] = [("手机网页", url, LinkReader.safariUA)]
+        var stages: [(String, URL, String)] = [("手机网页", url, LinkReader.safariUA)]
+        if let pc = URL(string: "https://detail.damai.cn/item.htm?id=\(id)") { stages.append(("电脑网页", pc, Self.desktopUA)) }
         self.stages = stages
         status = "读取中"
         nextStage()
@@ -135,6 +135,22 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
         return out
     }
 
+    /// 测一遍所有时间源，结果写进日志
+    func testTimeSources() {
+        log = []
+        status = "测时间源中"
+        Task {
+            for src in TimeSync.allSources {
+                if let r = await TimeSync.sync(src) {
+                    add("\(src)：偏差 \(r["offset"] ?? "") 毫秒，往返 \(r["rtt"] ?? "") 毫秒，精度 \(r["prec"] ?? "") 毫秒")
+                } else {
+                    add("\(src)：对不上")
+                }
+            }
+            status = "时间源测完了"
+        }
+    }
+
     private func report(_ id: Int) {
         web.evaluateJavaScript("JSON.stringify(window.__kdCap||[])") { [weak self] res, _ in
             guard let self, id == self.runId else { return }
@@ -142,6 +158,7 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
             self.search(list)
             for c in list {
                 let src = c["src"] as? String ?? "", body = c["body"] as? String ?? ""
+                if src.contains("subpage") { self.add("【subpage】\(body.count) 字：\(String(body.prefix(500)))") }
                 guard src.contains("mtop") else { continue }
                 self.add("【\(src.split(separator: "/").suffix(2).first ?? "")】\(body.count) 字")
                 for t in Self.timeFields(body) { self.add("  \(t)") }
@@ -227,6 +244,7 @@ struct LinkTestView: View {
             Text("标题：\(m.title)").font(.subheadline)
             Text("开抢时间：\(m.saleTime)").font(.subheadline)
             Text("状态：\(m.status)").font(.subheadline.weight(.semibold))
+            Button("测一遍时间源") { m.testTimeSources() }
             Button("复制日志") { UIPasteboard.general.string = m.log.joined(separator: "\n") }
             ScrollView {
                 Text(m.log.joined(separator: "\n")).font(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
