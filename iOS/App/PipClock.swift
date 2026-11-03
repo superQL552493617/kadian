@@ -45,6 +45,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private var beginId = UUID()
     /// 用户点了回到 App：这次关闭不算关悬浮窗，一切保留，退出 App 时系统自动再开
     private var restoring = false
+    private var starting = false
+    private var stopAfterStart = false
     /// 后面几场（JS 在后台不运行，所以提前交过来，到点后原生自己换下一场）
     private var targets: [(at: Double, label: String, name: String, when: String, plat: String)] = []
     private var targetPlat = ""
@@ -158,6 +160,9 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     func stop() {
         byUser = true
+        Diag.add("悬浮窗 用户关闭 starting=\(starting) 显示中=\(controller?.isPictureInPictureActive ?? false)")
+        // 正在打开的窗口不能直接丢掉，否则控制器没了窗口还在。等它开好马上关
+        if starting { stopAfterStart = true; return }
         if let c = controller, c.isPictureInPictureActive { c.stopPictureInPicture() } else { cleanup() }
     }
 
@@ -222,6 +227,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         host?.removeFromSuperview(); host = nil
         pool = nil; format = nil; lastKey = ""; lastBeep = nil
         active = false
+        starting = false
+        stopAfterStart = false
         try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
         SFX.sessionLocked = false
     }
@@ -474,13 +481,26 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     // MARK: 系统回调
 
+    func pictureInPictureControllerWillStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
+        starting = true
+    }
+
     func pictureInPictureControllerDidStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
         active = true
+        starting = false
         watchResign()
+        if stopAfterStart {
+            stopAfterStart = false
+            pending?(true); pending = nil
+            pictureInPictureController.stopPictureInPicture()
+            return
+        }
         pending?(true); pending = nil
     }
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, failedToStartPictureInPictureWithError error: Error) {
+        starting = false
+        if stopAfterStart { stopAfterStart = false; cleanup(); return }
         startFailed(fallback: true, why: "开启失败：\(error.localizedDescription)")
     }
 

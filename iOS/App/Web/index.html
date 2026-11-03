@@ -13674,7 +13674,7 @@ const w=window.open(u,'_blank');if(!w)toast('浏览器拦住了弹窗，点「�
 let PIP_ON=false;
 function askFollow(){const n=Date.now(),t=upcoming().find(x=>x.at>n);if(!t||t.at-n>8*36e5||t.src===curSrc()||S.prefs.followAsked===t.id)return;S.prefs.followAsked=t.id;save();FOLLOW=t.id}
 function removeFloat(){const o=$('.kd-float:not(.kd-fx):not(.kd-fpv)');o&&o.remove()}
-function togglePip(id){buzz();if(id&&PIP_ON&&PIP_ID!==id){PIP_ID=id;pushPip();renderDay();toast('悬浮窗已切到这一场');return}
+function togglePip(id){buzz();if(id&&PIP_ON&&PIP_ID&&PIP_ID!==id){PIP_ID=id;pushPip();renderDay();toast('悬浮窗已切到这一场');return}
 if(id)PIP_ID=id;PIP_LOST=false;if(PIP_ON)FOLLOW=null;
 if(IN_APP){const on=!PIP_ON;PIP_ON=on;renderDay();NN({cmd:'pip',on,...timeMsg(),...pipMsg()}).then(ok=>{PIP_ON=on&&ok!==false;if(on&&ok===false)toast('这台手机开不了悬浮窗，可以用灵动岛看倒计时','gray');else if(on){toast('悬浮窗已开启，切到抢购 App 就能看到')}renderDay()}).catch(()=>{PIP_ON=false;renderDay();toast('悬浮窗打开失败','gray')});return}
 if(!PIP_ON&&PV.pipFail){toast('这台手机开不了悬浮窗，可以用灵动岛看倒计时','gray');return}
@@ -13687,7 +13687,9 @@ $('button',f).onclick=()=>{PIP_ON=false;f.remove();renderDay()};
 askFollow();toast('网页预览：在 App 里会浮在其他 App 上方，位置由系统决定')}
 renderDay()}
 window.__kdPipLost=()=>{PIP_ON=false;removeFloat();if(tab==='today')renderDay()};
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&IN_APP&&S)NN({cmd:'pipstate'}).then(r=>{if(typeof r==='boolean'&&r!==PIP_ON){if(PIP_ON&&!r)window.__kdPipLost();else{PIP_ON=r;if(tab==='today')renderDay()}}}).catch(()=>{})});
+/* 和原生对一次状态。页面重新加载后 PIP_ID 会丢，补上，否则按钮显示开启、点了也关不掉 */
+const pipSync=()=>{if(!IN_APP||!S)return;NN({cmd:'pipstate'}).then(r=>{if(typeof r!=='boolean')return;if(r&&!PIP_ID){const t=nextLive();PIP_ID=t?t.id:null}if(r!==PIP_ON){if(PIP_ON&&!r)window.__kdPipLost();else PIP_ON=r}if(tab==='today')renderDay()}).catch(()=>{})};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)pipSync()});setTimeout(pipSync,1200);
 
 /* 悬浮窗卡片的预览，和原生 PipClock 画的一致；秒表是卡点自己画的 */
 function pipCardHTML(p){const c=PIP_PALS.find(x=>x.id===p.palette)||PIP_PALS[0],t=pipItem(),dark=c.id==='ink',k=c.fg,f=dark?'#101114':c.fg,ms=p.msSame?c.fg:c.ms;
