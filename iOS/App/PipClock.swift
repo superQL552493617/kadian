@@ -53,6 +53,18 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private var targetName = "", targetWhen = "", cdLabel = "倒计时", whenLabel = "开抢时间"
     private var subColor = UIColor.gray, pillColor = UIColor.white, lineColor = UIColor.lightGray
 
+    private var resignObs: NSObjectProtocol?
+
+    /// 退出 App 时再开一次。系统的自动开启不一定触发，这里补上
+    private func watchResign() {
+        guard resignObs == nil else { return }
+        resignObs = NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            guard let self, self.active, let c = self.controller, !c.isPictureInPictureActive else { return }
+            Diag.add("悬浮窗 退出 App 时自动再开")
+            c.startPictureInPicture()
+        }
+    }
+
     // MARK: 命令
 
     func setTimeInfo(_ b: [String: Any]) {
@@ -153,7 +165,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private func prepare(call: Bool) -> Bool {
         if controller != nil { return true }
         guard let win = UIApplication.topViewController()?.view.window else { return false }
-        let v = UIView(frame: CGRect(x: 0, y: 0, width: 120, height: 50))
+        // 来源视图铺满屏幕：回到 App 时窗口直接放大到全屏，退出时从全屏缩小（老板要「扩大特效」）
+        let v = UIView(frame: win.bounds)
         v.isUserInteractionEnabled = false
         let l = AVSampleBufferDisplayLayer()
         l.frame = v.bounds
@@ -443,6 +456,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     func pictureInPictureControllerDidStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
         active = true
+        watchResign()
         pending?(true); pending = nil
     }
 
@@ -463,8 +477,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void) {
         restoring = true
-        // 不等界面，也不让窗口飞回 App 里（老板觉得这段动画不流畅）。实际效果要真机看
-        completionHandler(false)
+        completionHandler(true)
     }
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, setPlaying playing: Bool) {}
