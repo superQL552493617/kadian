@@ -9,6 +9,15 @@ import UIKit
 // 音频用 mixWithOthers，开启时不打断别的 App 的音乐。时间线和网页一样：
 //   显示时间 = 手机时间 + 偏差 + 微调 + 补偿；倒计时 = 目标（已换算到手机时钟并含补偿）− 手机时间
 
+/// 通话式画中画的内容：系统只显示关闭和回到 App 两个按钮，没有快退快进和播放键
+final class PipCallVC: AVPictureInPictureVideoCallViewController {
+    var inner: CALayer?
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        inner?.frame = view.bounds
+    }
+}
+
 final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureInPictureSampleBufferPlaybackDelegate {
     static let shared = PipClock()
     var onLost: (() -> Void)?
@@ -33,8 +42,12 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private var byUser = false
     private var pending: ((Bool) -> Void)?
     private var lastBeep: Int?
+    private var beginId = UUID()
     /// 后面几场（JS 在后台不运行，所以提前交过来，到点后原生自己换下一场）
-    private var targets: [(at: Double, label: String, name: String, when: String)] = []
+    private var targets: [(at: Double, label: String, name: String, when: String, plat: String)] = []
+    private var targetPlat = ""
+    private var callVC: PipCallVC?
+    private var usedCall = false
     private var targetName = "", targetWhen = "", cdLabel = "倒计时", whenLabel = "开抢时间"
     private var subColor = UIColor.gray, pillColor = UIColor.white, lineColor = UIColor.lightGray
 
@@ -62,6 +75,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         if let v = b["targetLabel"] as? String { targetLabel = v }
         if let v = b["targetName"] as? String { targetName = v }
         if let v = b["targetWhen"] as? String { targetWhen = v }
+        if let v = b["targetPlat"] as? String { targetPlat = v }
         if let v = b["cdLabel"] as? String { cdLabel = v }
         if let v = b["whenLabel"] as? String { whenLabel = v }
         if let v = b["sub"] as? String { subColor = Self.color(v) ?? subColor }
@@ -70,13 +84,14 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         if let v = b["targets"] as? [[String: Any]] {
             targets = v.compactMap { d in
                 guard let a = (d["at"] as? NSNumber)?.doubleValue else { return nil }
-                return (a, d["label"] as? String ?? "", d["name"] as? String ?? "", d["when"] as? String ?? "")
+                return (a, d["label"] as? String ?? "", d["name"] as? String ?? "", d["when"] as? String ?? "", d["plat"] as? String ?? "")
             }
         }
         if let v = b["firedLabel"] as? String { firedLabel = v }
         if let v = b["leadLabel"] as? String { leadLabel = v }
         if let v = b["secUnit"] as? String { secUnit = v }
         if active { restartTimer() }
+        callVC?.preferredContentSize = sizeForShape()
         lastKey = ""
     }
 
@@ -88,27 +103,42 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
             try AVAudioSession.sharedInstance().setActive(true)
         } catch { done(false); return }
         SFX.sessionLocked = true
-        guard prepare() else { cleanup(); done(false); return }
+        guard prepare(call: true) else { cleanup(); done(false); return }
         byUser = false
         pending = done
         restartTimer()
         tick()
-        // 系统说「可以开」了再开；等太久算失败，不让按钮卡住
+        begin(fallback: true)
+    }
+
+    /// 系统说「可以开」了再开；通话式开不起来就退回普通画中画（有快退快进按钮），再不行才算失败
+    private func begin(fallback: Bool) {
+        let gen = UUID(); beginId = gen
         possibleObs = controller?.observe(\.isPictureInPicturePossible, options: [.initial, .new]) { [weak self] c, _ in
             guard c.isPictureInPicturePossible else { return }
             DispatchQueue.main.async {
-                guard let self, self.pending != nil else { return }
+                guard let self, self.pending != nil, self.beginId == gen else { return }
                 self.possibleObs = nil
                 self.controller?.startPictureInPicture()
             }
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
-            guard let self, let p = self.pending else { return }
-            self.pending = nil
-            self.cleanup()
-            Diag.add("悬浮窗 4 秒内没开起来")
-            p(false)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+            guard let self, self.beginId == gen, !self.active, self.pending != nil else { return }
+            self.startFailed(fallback: fallback, why: "3 秒内没开起来")
         }
+    }
+
+    private func startFailed(fallback: Bool, why: String) {
+        Diag.add("悬浮窗 \(usedCall ? "通话式" : "普通") \(why)")
+        possibleObs = nil
+        if fallback, usedCall {
+            controller = nil; callVC = nil; layer?.removeFromSuperlayer(); layer = nil; host?.removeFromSuperview(); host = nil
+            pool = nil; format = nil; lastKey = ""
+            if prepare(call: false) { tick(); begin(fallback: false); return }
+        }
+        let p = pending; pending = nil
+        cleanup()
+        p?(false)
     }
 
     func stop() {
@@ -118,22 +148,34 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     // MARK: 准备
 
-    private func prepare() -> Bool {
+    private func prepare(call: Bool) -> Bool {
         if controller != nil { return true }
         guard let win = UIApplication.topViewController()?.view.window else { return false }
         let v = UIView(frame: CGRect(x: 0, y: 0, width: 120, height: 50))
         v.isUserInteractionEnabled = false
         let l = AVSampleBufferDisplayLayer()
         l.frame = v.bounds
-        l.videoGravity = .resizeAspect
-        v.layer.addSublayer(l)
+        l.videoGravity = .resizeAspectFill
         win.insertSubview(v, at: 0) // 放在页面底下，用户看不到，但必须在窗口里
         host = v
         layer = l
-        let src = AVPictureInPictureController.ContentSource(sampleBufferDisplayLayer: l, playbackDelegate: self)
+        let src: AVPictureInPictureController.ContentSource
+        if call {
+            let vc = PipCallVC()
+            vc.preferredContentSize = sizeForShape()
+            vc.view.layer.addSublayer(l)
+            vc.inner = l
+            callVC = vc
+            src = AVPictureInPictureController.ContentSource(activeVideoCallSourceView: v, contentViewController: vc)
+        } else {
+            v.layer.addSublayer(l)
+            src = AVPictureInPictureController.ContentSource(sampleBufferDisplayLayer: l, playbackDelegate: self)
+        }
+        usedCall = call
+        Diag.add("悬浮窗 用\(call ? "通话式" : "普通")画中画")
         let c = AVPictureInPictureController(contentSource: src)
         c.delegate = self
-        c.requiresLinearPlayback = true
+        if !call { c.requiresLinearPlayback = true }
         c.canStartPictureInPictureAutomaticallyFromInline = false
         controller = c
         return true
@@ -143,6 +185,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         timer?.cancel(); timer = nil
         possibleObs = nil
         controller = nil
+        callVC = nil
         layer?.flush()
         layer = nil
         host?.removeFromSuperview(); host = nil
@@ -170,7 +213,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private func compute(_ now: Double) -> View {
         // 上一场到点超过 60 秒，换下一场
         if let n = targets.first(where: { $0.at - now > -60_000 }), n.at != target {
-            target = n.at; targetLabel = n.label; targetName = n.name; targetWhen = n.when; lastBeep = nil
+            target = n.at; targetLabel = n.label; targetName = n.name; targetWhen = n.when; targetPlat = n.plat; lastBeep = nil
         }
         let left: Double? = target > 0 ? target - now : nil
         var v = View()
@@ -207,7 +250,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         let now = Date().timeIntervalSince1970 * 1000
         beepIfNeeded(now)
         let v = compute(now)
-        let key = "\(v.main)|\(v.ms)|\(v.small)|\(v.alert)|\(shape)|\(targetName)|\(targetWhen)"
+        let key = "\(v.main)|\(v.ms)|\(v.small)|\(v.alert)|\(shape)|\(targetName)|\(targetWhen)|\(targetPlat)"
         guard key != lastKey || now - lastEnqueue > 500 else { return }
         guard let l = layer else { return }
         if l.status == .failed { l.flush() }
@@ -345,10 +388,12 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         ctx.move(to: CGPoint(x: mx + 43 * u, y: my + 66 * u)); ctx.addQuadCurve(to: CGPoint(x: mx + 57 * u, y: my + 66 * u), control: CGPoint(x: mx + 50 * u, y: my + 73 * u)); ctx.strokePath()
         ctx.setFillColor(msColor.withAlphaComponent(0.55).cgColor)
         for x in [30.0, 70.0] { ctx.fillEllipse(in: CGRect(x: mx + (x - 5) * u, y: my + 59 * u, width: 10 * u, height: 10 * u)) }
+        // 平台
+        NSAttributedString(string: targetPlat, attributes: [.font: UIFont.systemFont(ofSize: h * 0.07, weight: .semibold), .foregroundColor: subColor]).draw(at: CGPoint(x: pad, y: h * 0.07))
         // 名称
         let para = NSMutableParagraphStyle(); para.lineBreakMode = .byTruncatingTail
         NSAttributedString(string: targetName, attributes: [.font: UIFont.systemFont(ofSize: h * 0.1, weight: .bold), .foregroundColor: ink, .paragraphStyle: para])
-            .draw(with: CGRect(x: pad, y: h * 0.09, width: mx - pad - w * 0.02, height: h * 0.14), options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], context: nil)
+            .draw(with: CGRect(x: pad, y: h * 0.19, width: mx - pad - w * 0.02, height: h * 0.14), options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], context: nil)
         // 开抢时间框
         let pw = w * 0.25, ph = h * 0.33, px = w - pw - w * 0.04, py = h - ph - h * 0.08
         let box = UIBezierPath(roundedRect: CGRect(x: px, y: py, width: pw, height: ph), cornerRadius: h * 0.07)
@@ -400,10 +445,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     }
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, failedToStartPictureInPictureWithError error: Error) {
-        Diag.add("悬浮窗开启失败：\(error.localizedDescription)")
-        let p = pending; pending = nil
-        cleanup()
-        p?(false)
+        startFailed(fallback: true, why: "开启失败：\(error.localizedDescription)")
     }
 
     func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
