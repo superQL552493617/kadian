@@ -52,6 +52,7 @@ final class LinkReader: NSObject, WKNavigationDelegate {
         let cfg = WKWebViewConfiguration()
         cfg.websiteDataStore = .nonPersistent()
         cfg.mediaTypesRequiringUserActionForPlayback = .all
+        cfg.userContentController.addUserScript(WKUserScript(source: Self.capture, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         let wv = WKWebView(frame: CGRect(x: 0, y: 0, width: 390, height: 844), configuration: cfg)
         wv.customUserAgent = Self.safariUA
         wv.navigationDelegate = self
@@ -65,12 +66,27 @@ final class LinkReader: NSObject, WKNavigationDelegate {
 
     static let safariUA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1"
 
+    /// 页面加载前放进去：记下页面自己收到的、含关键字的数据。只旁听，不自己发请求、不算签名
+    static let capture = """
+    (function(){var K=/开抢|开售|开票|开卖|预售|sellStart|sellTime|saleTime|openTime|startTime|itemName|projectName|performName/i;window.__kdCap=[];
+    function cut(u){return String(u||'').split('?')[0].slice(0,120)}
+    function add(src,t){try{t=typeof t==='string'?t:JSON.stringify(t);if(t&&K.test(t)&&window.__kdCap.length<12)window.__kdCap.push({src:cut(src),body:t.slice(0,200000)})}catch(e){}}
+    var F=window.fetch;if(F)window.fetch=function(){var a=arguments,u=a[0]&&a[0].url||a[0];return F.apply(this,a).then(function(r){try{r.clone().text().then(function(t){add(u,t)})}catch(e){}return r})};
+    var O=XMLHttpRequest.prototype.open,S=XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open=function(m,u){this.__kdU=u;return O.apply(this,arguments)};
+    XMLHttpRequest.prototype.send=function(){var x=this;x.addEventListener('load',function(){try{add(x.__kdU,x.responseText)}catch(e){}});return S.apply(this,arguments)};
+    function wrap(s){if(!s.src){if(s.textContent)add('内嵌脚本',s.textContent);return}var m=/[?&](?:callback|jsonpCallback)=([\\w$]+)/.exec(s.src);if(!m)return;var n=m[1],f=window[n];if(typeof f==='function'&&!f.__kd){var g=function(d){add(s.src,d);return f.apply(this,arguments)};g.__kd=1;window[n]=g}}
+    new MutationObserver(function(ms){ms.forEach(function(x){x.addedNodes.forEach(function(n){if(n.tagName==='SCRIPT')wrap(n)})})}).observe(document,{childList:true,subtree:true});
+    })()
+    """
+
     static let snapshot = """
     (function(){var b=document.body,t=b?b.innerText:'',og=document.querySelector('meta[property="og:title"]'),best='',bs=0;
     var els=document.querySelectorAll('h1,h2,h3,[class*=title],[class*=Title],[class*=name],[class*=Name]');
     for(var i=0;i<els.length&&i<200;i++){var e=els[i],s=(e.innerText||'').trim();if(s.length<4||s.length>80||s.indexOf('\\n')>=0)continue;
     var r=e.getBoundingClientRect();if(r.height===0||r.top>innerHeight)continue;var f=parseFloat(getComputedStyle(e).fontSize)||0;if(f>bs){bs=f;best=s}}
-    return JSON.stringify({title:document.title||'',og:og?(og.content||''):'',head:best,text:t.slice(0,8000),href:location.href})})()
+    var item='',cap=window.__kdCap||[];for(var c=0;c<cap.length;c++){if(cap[c].src.indexOf('item.detail.getdetail')<0)continue;var m=/"itemName":"([^"\\\\]+)"/.exec(cap[c].body);if(m){item=m[1];break}}
+    return JSON.stringify({title:document.title||'',og:og?(og.content||''):'',head:best,item:item,text:t.slice(0,8000),href:location.href})})()
     """
 
     private func poll() {
@@ -83,7 +99,7 @@ final class LinkReader: NSObject, WKNavigationDelegate {
                 if Self.looksBlocked(text, href) {
                     self.finish(self.result(blocked: true)); return
                 }
-                if Self.hasSaleTime(text) { self.finish(self.result(blocked: false)); return }
+                if Self.hasSaleTime(text) || !(j["item"] as? String ?? "").isEmpty { self.finish(self.result(blocked: false)); return }
             }
             if Date().timeIntervalSince(self.began) > 9 { self.finish(self.result(blocked: false)); return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.poll() }
@@ -103,7 +119,8 @@ final class LinkReader: NSObject, WKNavigationDelegate {
     }
 
     private func result(blocked: Bool) -> [String: Any] {
-        let head = last["head"] as? String ?? "", og = last["og"] as? String ?? "", title = last["title"] as? String ?? ""
+        let item = last["item"] as? String ?? ""
+        let head = item.isEmpty ? (last["head"] as? String ?? "") : item, og = last["og"] as? String ?? "", title = last["title"] as? String ?? ""
         let text = last["text"] as? String ?? ""
         return ["head": head, "og": og, "title": title, "text": blocked ? "" : text, "blocked": blocked]
     }

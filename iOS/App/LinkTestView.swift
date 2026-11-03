@@ -34,22 +34,10 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
     static let desktopUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15"
 
     /// 页面加载前放进去：记下页面自己收到的、含关键字的数据（fetch、XHR、JSONP、内嵌脚本）
-    static let capture = """
-    (function(){var K=/开抢|开售|开票|开卖|预售|sellStart|sellTime|saleTime|openTime|startTime|itemName|projectName|performName/i;window.__kdCap=[];
-    function cut(u){return String(u||'').split('?')[0].slice(0,120)}
-    function add(src,t){try{t=typeof t==='string'?t:JSON.stringify(t);if(t&&K.test(t)&&window.__kdCap.length<12)window.__kdCap.push({src:cut(src),body:t.slice(0,30000)})}catch(e){}}
-    var F=window.fetch;if(F)window.fetch=function(){var a=arguments,u=a[0]&&a[0].url||a[0];return F.apply(this,a).then(function(r){try{r.clone().text().then(function(t){add(u,t)})}catch(e){}return r})};
-    var O=XMLHttpRequest.prototype.open,S=XMLHttpRequest.prototype.send;
-    XMLHttpRequest.prototype.open=function(m,u){this.__kdU=u;return O.apply(this,arguments)};
-    XMLHttpRequest.prototype.send=function(){var x=this;x.addEventListener('load',function(){try{add(x.__kdU,x.responseText)}catch(e){}});return S.apply(this,arguments)};
-    function wrap(s){if(!s.src){if(s.textContent)add('内嵌脚本',s.textContent);return}var m=/[?&](?:callback|jsonpCallback)=([\\w$]+)/.exec(s.src);if(!m)return;var n=m[1],f=window[n];if(typeof f==='function'&&!f.__kd){var g=function(d){add(s.src,d);return f.apply(this,arguments)};g.__kd=1;window[n]=g}}
-    new MutationObserver(function(ms){ms.forEach(function(x){x.addedNodes.forEach(function(n){if(n.tagName==='SCRIPT')wrap(n)})})}).observe(document,{childList:true,subtree:true});
-    })()
-    """
-
+    static var capture: String { LinkReader.capture }
     /// 关键字前后各 50 字，每条数据最多 6 处
-    private static func snippets(_ body: String) -> [String] {
-        guard let re = try? NSRegularExpression(pattern: "开抢|开售|开票|开卖|预售|sellStart|sellTime|saleTime|openTime|startTime|itemName|projectName|performName", options: .caseInsensitive) else { return [] }
+    private static func snippets(_ body: String, _ pat: String) -> [String] {
+        guard let re = try? NSRegularExpression(pattern: pat, options: .caseInsensitive) else { return [] }
         let ns = body as NSString
         return re.matches(in: body, range: NSRange(location: 0, length: ns.length)).prefix(6).map { m in
             let a = max(0, m.range.location - 50), b = min(ns.length, m.range.location + m.range.length + 50)
@@ -68,8 +56,8 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
         guard url.absoluteString.range(of: "itemId=\\d+", options: .regularExpression) != nil else { status = "链接里没有 itemId"; return }
         guard let r = raw.range(of: "itemId=\\d+", options: .regularExpression) else { return }
         let id = raw[r].dropFirst("itemId=".count)
-        var stages: [(String, URL, String)] = [("手机网页", url, LinkReader.safariUA)]
-        if let pc = URL(string: "https://detail.damai.cn/item.htm?id=\(id)") { stages.append(("电脑网页", pc, Self.desktopUA)) }
+        _ = id
+        let stages: [(String, URL, String)] = [("手机网页", url, LinkReader.safariUA)]
         self.stages = stages
         status = "读取中"
         nextStage()
@@ -91,19 +79,42 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
         read(1, runId)
     }
 
+    /// 列出数据里所有像时间的字段（只给老板和开发判断哪个是开抢时间，这里不猜）
+    private static func timeFields(_ body: String) -> [String] {
+        guard let re = try? NSRegularExpression(pattern: #"\\*"([A-Za-z_][A-Za-z0-9_]*)\\*"\s*:\s*\\*"?([^,"\\}\]]{1,40})"#) else { return [] }
+        let ns = body as NSString
+        let f = DateFormatter(); f.dateFormat = "MM-dd HH:mm:ss"
+        var seen = Set<String>(), out: [String] = []
+        for m in re.matches(in: body, range: NSRange(location: 0, length: ns.length)) {
+            let k = ns.substring(with: m.range(at: 1)), v = ns.substring(with: m.range(at: 2))
+            guard !k.lowercased().contains("rule"), v.rangeOfCharacter(from: .decimalDigits) != nil else { continue }
+            let isMs = v.range(of: #"^1\d{12}$"#, options: .regularExpression) != nil
+            let isDate = v.range(of: #"20\d\d[-./年]"#, options: .regularExpression) != nil
+            let isKey = k.range(of: "sell|sale|flash|count|open|begin|start", options: [.regularExpression, .caseInsensitive]) != nil
+            guard isMs || isDate || isKey else { continue }
+            let show = isMs ? "\(k) = \(v) → \(f.string(from: Date(timeIntervalSince1970: (Double(v) ?? 0) / 1000)))" : "\(k) = \(v)"
+            if seen.insert(show).inserted { out.append(show) }
+            if out.count >= 40 { break }
+        }
+        return out
+    }
+
     private func report(_ id: Int) {
         web.evaluateJavaScript("JSON.stringify(window.__kdCap||[])") { [weak self] res, _ in
             guard let self, id == self.runId else { return }
             let list = (res as? String).flatMap { $0.data(using: .utf8) }.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [[String: Any]] } ?? []
-            self.add("\(self.stageName)：页面收到含关键字的数据 \(list.count) 条")
             for c in list {
-                let body = c["body"] as? String ?? ""
-                self.add("  来源 \(c["src"] as? String ?? "")，\(body.count) 字")
-                for sn in Self.snippets(body) { self.add("    …\(sn)…") }
+                let src = c["src"] as? String ?? "", body = c["body"] as? String ?? ""
+                guard src.contains("mtop") else { continue }
+                self.add("【\(src.split(separator: "/").suffix(2).first ?? "")】\(body.count) 字")
+                for t in Self.timeFields(body) { self.add("  \(t)") }
+                for sn in Self.snippets(body, "开抢|开售|开票|开卖") { self.add("  文字：…\(sn)…") }
+                let ns = body as NSString, fl = ns.range(of: "flashSaleEndTime")
+                if fl.location != NSNotFound {
+                    let a = max(0, fl.location - 400)
+                    self.add("  flashSale 前面的内容：…\(ns.substring(with: NSRange(location: a, length: fl.location - a)))")
+                }
             }
-            let lines = self.pageText.split(separator: "\n").filter { $0.range(of: "开抢|开售|开票|开卖|预售|售票|不支持|登录|验证", options: .regularExpression) != nil }.prefix(20)
-            for l in lines { self.add("  页面文字：\(l)") }
-            self.add("\(self.stageName)：页面文字开头：\(String(self.pageText.prefix(300)).replacingOccurrences(of: "\n", with: " / "))")
             self.nextStage()
         }
     }
@@ -120,9 +131,9 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
                 let head = j["head"] as? String ?? "", docTitle = j["title"] as? String ?? ""
                 self.title = head.isEmpty ? docTitle : head
                 if let t = Self.findSaleTime(text) { self.saleTime = t; matched = true }
-                self.add("第 \(n) 次读取：标题「\(docTitle)」大字「\(head)」文字 \(text.count) 字，\(matched ? "读到时间 \(self.saleTime)" : "没有时间")")
-            } else { self.add("第 \(n) 次读取：页面还没准备好") }
-            if matched || n >= 10 { self.report(id); return }
+                if !(j["item"] as? String ?? "").isEmpty { self.title = j["item"] as? String ?? "" }
+            }
+            if matched || n >= 8 { self.report(id); return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.read(n + 1, id) }
         }
     }
@@ -175,9 +186,9 @@ struct LinkTestView: View {
             Text("标题：\(m.title)").font(.subheadline)
             Text("开抢时间：\(m.saleTime)").font(.subheadline)
             Text("状态：\(m.status)").font(.subheadline.weight(.semibold))
-            Button("复制日志和页面文字") { UIPasteboard.general.string = m.log.joined(separator: "\n") + "\n---\n" + m.pageText }
+            Button("复制日志") { UIPasteboard.general.string = m.log.joined(separator: "\n") }
             ScrollView {
-                Text(m.log.joined(separator: "\n") + "\n---\n" + m.pageText).font(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
+                Text(m.log.joined(separator: "\n")).font(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
             }.frame(maxHeight: .infinity)
             // 网页视图一直在视图层级里，隐藏时只是几乎透明，脚本才会执行
             TestWeb(web: m.web).frame(height: showWeb ? 320 : 2).opacity(showWeb ? 1 : 0.01).allowsHitTesting(showWeb)
