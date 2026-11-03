@@ -2469,11 +2469,8 @@
 "在一场活动里按 0.5 秒加减。加是提前到点，减是推迟到点，只影响这一场的倒计时，不影响提醒。": "Adjust a sale by 0.5 s. + reaches zero earlier, − later. It affects only this countdown, not reminders.",
 "会先尝试打开对应的 App，没装或跳不过去时用浏览器打开。": "Tries the platform’s app first, then the browser if that fails.",
 "在一场活动里打开「开启悬浮窗」，保存后开启，切到其他 App 也能看到。只显示最近一场，到点后换下一场。位置和大小由系统决定。": "Turn on “Floating window” in a sale. It starts after saving and stays visible in other apps. It shows the nearest sale, then the next. The system decides its position and size.",
-"读 App 截图": "Read a screenshot",
-"在抢购 App 的活动页截图，选这张图自动读名称和开抢时间": "Screenshot the sale page in its app, then choose it to read the name and sale time",
-"选截图": "Choose",
-"这张截图里没读到开抢时间，请确认截到了「开抢」那一行，或手动填写。": "No sale time found. Make sure the screenshot shows the sale time, or fill it in by hand.",
-"网页预览读不了截图，装进 App 后可以用": "The web preview can’t read screenshots. It works in the app.",
-"没能读这张截图，可以手动填写": "Couldn’t read this screenshot. You can fill it in by hand.",
-"链接读不到开抢时间时，在抢购 App 的活动页截图，到添加页选这张图。手机本地识别，不上传。": "If a link has no sale time, screenshot the sale page and choose it on the add page. It’s read on your phone and never uploaded."
+"这场读不到开抢时间": "No sale time for this one",
+"去{}看时间": "Check in {0}",
+"读不到开抢时间": "No sale time found",
+"有些场次的链接读不到开抢时间，点「去 App 看时间」跳到活动页，看到时间后回来手动填。": "Some links have no sale time. Tap the check button to open the sale page, then come back and fill it in."
 }
