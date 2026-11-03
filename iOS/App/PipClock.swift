@@ -43,6 +43,8 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private var pending: ((Bool) -> Void)?
     private var lastBeep: Int?
     private var beginId = UUID()
+    /// 用户点了回到 App：这次关闭不算关悬浮窗，一切保留，退出 App 时系统自动再开
+    private var restoring = false
     /// 后面几场（JS 在后台不运行，所以提前交过来，到点后原生自己换下一场）
     private var targets: [(at: Double, label: String, name: String, when: String, plat: String)] = []
     private var targetPlat = ""
@@ -176,7 +178,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         let c = AVPictureInPictureController(contentSource: src)
         c.delegate = self
         if !call { c.requiresLinearPlayback = true }
-        c.canStartPictureInPictureAutomaticallyFromInline = false
+        c.canStartPictureInPictureAutomaticallyFromInline = true
         controller = c
         return true
     }
@@ -449,13 +451,20 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     }
 
     func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
+        if restoring {
+            restoring = false
+            Diag.add("悬浮窗 回到 App，退出时自动再开")
+            return
+        }
         let user = byUser
         cleanup()
         if !user { onLost?() }
     }
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void) {
-        completionHandler(true)
+        restoring = true
+        // 不等界面，也不让窗口飞回 App 里（老板觉得这段动画不流畅）。实际效果要真机看
+        completionHandler(false)
     }
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, setPlaying playing: Bool) {}
