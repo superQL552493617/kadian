@@ -8,7 +8,9 @@ import WebKit
 @MainActor
 final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
     @Published var link = "https://m.damai.cn/shows/item.html?itemId=1082769026036"
-    @Published var title = "", saleTime = "", status = "未开始"
+    @Published var title = ""
+    @Published var saleTime = ""
+    @Published var status = "未开始"
     @Published var pageText = ""
     @Published var log: [String] = []
     let web: WKWebView
