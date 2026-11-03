@@ -10,7 +10,7 @@ The App offers a millisecond clock, platform time sync, sale countdowns, a float
 
 **2. Price**
 
-All features are free. There are no ads and nothing to pay for.
+Basic features are free. Member benefits are paid: Lifetime is a one-time purchase; Quarterly renews automatically every 3 months, is charged within 24 hours before the period ends, and can be cancelled anytime in Settings > Apple Account > Subscriptions. Apple charges the fee, and the price is shown on the purchase page.
 
 **3. Your data**
 

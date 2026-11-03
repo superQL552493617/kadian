@@ -58,7 +58,7 @@ enum TestMode {
     static var vip: Bool {
         guard isTestBuild else { return false }
         let d = UserDefaults.standard
-        return d.object(forKey: vipKey) == nil ? true : d.bool(forKey: vipKey)
+        return d.object(forKey: vipKey) == nil ? false : d.bool(forKey: vipKey) // 默认不是会员，TestFlight 里的购买是沙盒，不花钱
     }
     static func setVip(_ on: Bool) { UserDefaults.standard.set(on, forKey: vipKey) }
 }

@@ -26,7 +26,7 @@ def _p(v):   # 价格候选：先用 app.json 里写的，没有这一档再用�
 PLANS = {
     "year": dict(pid=VIP["year"]["id"], name=VIP["year"]["zh"][0], period="ONE_YEAR", usd=_p(VIP["year"]["usd"]), cny=_p(VIP["year"]["cny"]),
                  zh=tuple(VIP["year"]["zh"]), en=tuple(VIP["year"]["en"]), trial=VIP["year"].get("trial")),
-    "month": dict(pid=VIP["month"]["id"], name=VIP["month"]["zh"][0], period="ONE_MONTH", usd=_p(VIP["month"]["usd"]), cny=_p(VIP["month"]["cny"]),
+    "month": dict(pid=VIP["month"]["id"], name=VIP["month"]["zh"][0], period="THREE_MONTHS", usd=_p(VIP["month"]["usd"]), cny=_p(VIP["month"]["cny"]),
                   zh=tuple(VIP["month"]["zh"]), en=tuple(VIP["month"]["en"]), trial=VIP["month"].get("trial")),
     "life": dict(pid=VIP["life"]["id"], name=VIP["life"]["zh"][0], usd=_p(VIP["life"]["usd"]), cny=_p(VIP["life"]["cny"]),
                  zh=tuple(VIP["life"]["zh"]), en=tuple(VIP["life"]["en"])),
@@ -314,7 +314,7 @@ def main():
         terrs = territories()
         print("地区数：", len(terrs))
         gid = ensure_group(app)
-        for k in ("year", "month"):
+        for k in ("month",):
             print(f"== {PLANS[k]['name']}")
             sid = ensure_sub(gid, PLANS[k], terrs)
             if sid and k == "year":

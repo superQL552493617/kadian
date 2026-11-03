@@ -53,7 +53,7 @@ enum L10n {
         "打开": ["Open", "打開"],
         "下一场": ["Next", "下一場"],
         "添加一场抢购": ["Add a sale", "新增一場搶購"],
-        "点一下打开卡点": ["Tap to open OnCue", "點一下打開卡點"],
+        "点一下打开准点时钟": ["Tap to open OnTime Clock", "點一下打開準點時鐘"],
         "已开抢": ["Started", "已開搶"],
         "显示下一场的名称和倒计时。": ["Shows the next sale and its countdown.", "顯示下一場的名稱和倒數。"],
         "正在打开相机…": ["Opening the camera…", "正在打開相機…"],

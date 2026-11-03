@@ -1,6 +1,6 @@
 {
  "bundleId": "site.xiaomanhabit.kadian",
- "name": "OnCue",
+ "name": "OnTime Clock",
  "profilePrefix": "AppStore",
  "createCertificate": false,
  "profiles": true,

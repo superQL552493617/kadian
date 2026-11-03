@@ -3,15 +3,16 @@
 const path=require('path'),fs=require('fs'),{chromium}=require('playwright');
 const URL_='file://'+path.join(__dirname,'../iOS/App/Web/index.html'),SHOTS=process.argv[2]||'';
 const results=[];const ck=(id,ok,info='')=>{results.push({id,ok,info});console.log(`${ok?'通过':'不通过'} | ${id}${info?' | '+info:''}`)};
-const RES={zh:/习惯|打卡|日志|笔记|会员|订阅|读书|运动|单词|VIP|续费|每日提醒|通知角标|注销|配色板|卡片/,
- hant:/習慣|打卡|日誌|筆記|會員|訂閱|讀書|運動|單詞|VIP|續費|每日提醒|註銷|配色板|卡片/,
- en:/habit|check-?in|journal|premium|member|subscri|VIP|renew|daily reminder|palette|\bcard/i};
+const RES={zh:/习惯|打卡|日志|笔记|读书|运动|单词|每日提醒|通知角标|注销|配色板|卡片/,
+ hant:/習慣|打卡|日誌|筆記|讀書|運動|單詞|每日提醒|註銷|配色板|卡片/,
+ en:/habit|check-?in|journal|daily reminder|palette|\bcard/i};
 async function open(b,o={}){const c=await b.newContext({viewport:o.small?{width:375,height:667}:{width:390,height:844},deviceScaleFactor:2,hasTouch:!!o.touch,timezoneId:'Asia/Shanghai',colorScheme:o.dark?'dark':'light',locale:'zh-CN'});
 const p=await c.newPage();p.errs=[];p.native=[];p.on('pageerror',e=>p.errs.push(e.message));
 await p.exposeFunction('__rec',m=>{p.native.push(m)});
 if(o.app)await p.addInitScript(()=>{window.__XM_NATIVE__=true;window.__XM_SPLASH_DONE=true;window.webkit={messageHandlers:{native:{postMessage:m=>{window.__rec(JSON.parse(JSON.stringify(m)));if(m.cmd==='live')return Promise.resolve(window.__liveRes);if(m.cmd==='linkinfo')return Promise.resolve(window.__linkRes||null);if(m.cmd==='calendar')return Promise.resolve(window.__calRes||{events:[]});return Promise.resolve(null)}}}}});
 if(o.lang)await p.addInitScript(l=>{try{localStorage.setItem('xm-lang',l)}catch(e){}},o.lang);
 await p.goto(URL_);await p.waitForFunction(()=>typeof S!=='undefined'&&S&&document.querySelector('#view'));
+if(!o.free)await p.evaluate(()=>{S.vip=true});
 if(!o.guide)await p.evaluate(()=>{S.prefs.guided=true;S.prefs.agreed=POLICY_VER;save();document.querySelectorAll('.gd,.pc').forEach(x=>x.remove())});
 await p.waitForTimeout(150);return p}
 const shot=async(p,n)=>{if(SHOTS){fs.mkdirSync(SHOTS,{recursive:true});await p.screenshot({path:path.join(SHOTS,n+'.png')})}};
@@ -73,7 +74,10 @@ p=await open(b,{app:true});await seed(p,[{name:'已开抢',in:-300e3}]);await p.
 /* ---- G4 从日历添加 ---- */
 p=await open(b,{app:true});await p.evaluate(()=>{const n=Date.now();window.__linkRes={head:'【北京】凤凰传奇演唱会-北京站',title:'商品详情',text:'',sell:0};window.__calRes={events:[{title:'开会',at:n+36e5},{title:'【北京】凤凰传奇演唱会 开抢',at:n+72e5},{title:'过去的',at:n-36e5}]}});await p.click('#kdAdd');await p.waitForSelector('.sheet.ie');await p.evaluate(()=>{const el=document.querySelector('#ieLink');el.value='https://m.damai.cn/shows/item.html?itemId=1';el.dispatchEvent(new Event('paste'))});await p.waitForSelector('#lrOk');await p.click('#lrOk');await p.waitForSelector('#ieCal');await p.click('#ieCal');await p.waitForSelector('[data-cal]');st=await p.evaluate(()=>[...document.querySelectorAll('[data-cal]')].map(x=>x.innerText));ck('G4 日历列表：相关的排第一，过去的不显示',st.length===2&&/凤凰/.test(st[0]),st.join('|'));await p.click('[data-cal="0"]');await p.waitForTimeout(300);r=await ie(p);ck('G4 选了日历填上时间',!!r.time&&r.name.includes('凤凰'),JSON.stringify(r));await p.context().close();
 p=await open(b,{app:true});await p.evaluate(()=>{window.__linkRes={head:'',og:'',title:'某洁面乳 男士【图片 价格 品牌 评论】-京东',text:'',sell:0}});await p.click('#kdAdd');await p.waitForSelector('.sheet.ie');await p.evaluate(()=>{const el=document.querySelector('#ieLink');el.value='https://item.m.jd.com/product/1.html';el.dispatchEvent(new Event('paste'))});await p.waitForSelector('#lrOk');t=await p.evaluate(()=>document.querySelector('.kd-lr-n').textContent);ck('G4 京东标题去掉网站后缀',t==='某洁面乳 男士',t);await p.context().close();
-p=await open(b);await p.evaluate(()=>goPage('me'));await p.waitForTimeout(120);st=await p.evaluate(()=>({tiles:[...document.querySelectorAll('.me-tile')].map(x=>x.innerText.trim()),txt:document.body.innerText}));ck('G4 我的页只留悬浮窗设置和意见反馈，有用户 ID 和协议',st.tiles.join()==='悬浮窗设置,意见反馈'&&/用户 ID/.test(st.txt)&&/隐私政策/.test(st.txt)&&!/订阅/.test(st.txt),st.tiles.join());await p.context().close();
+p=await open(b);await p.evaluate(()=>goPage('me'));await p.waitForTimeout(120);st=await p.evaluate(()=>({tiles:[...document.querySelectorAll('.me-tile')].map(x=>x.innerText.trim()),txt:document.body.innerText}));ck('G4 我的页只留悬浮窗设置和意见反馈，有用户 ID 和协议',st.tiles.join()==='会员,悬浮窗设置,意见反馈'&&/用户 ID/.test(st.txt)&&/隐私政策/.test(st.txt),st.tiles.join());await p.context().close();
+/* ---- 会员 ---- */
+p=await open(b,{free:true});await seed(p,[{name:'甲',in:36e5},{name:'乙',in:72e5},{name:'丙',in:108e5}]);await p.waitForTimeout(120);await p.click('#kdAdd');await p.waitForTimeout(350);st=await p.evaluate(()=>({ie:!!document.querySelector('.sheet.ie'),vip:!!document.querySelector('.vp2'),perk:document.querySelector('.vp2')?.innerText||''}));ck('会员 免费满 3 场再加弹会员页',!st.ie&&st.vip,JSON.stringify(st.ie));ck('会员页只写真实权益和两个方案',/全程无广告/.test(st.perk)&&/不限场次/.test(st.perk)&&/永久会员/.test(st.perk)&&/季度会员/.test(st.perk)&&!/年度|月度|试用/.test(st.perk),st.perk.slice(0,120));await p.context().close();
+p=await open(b,{free:true});await p.evaluate(()=>openPipSheet());await p.waitForTimeout(250);await p.click('[data-pal="ink"]');await p.waitForTimeout(250);st=await p.evaluate(()=>({pal:pipP().palette,vip:!!document.querySelector('.vp2')}));ck('会员 免费点锁定配色弹会员页，配色不变',st.pal==='sky'&&st.vip,JSON.stringify(st));await p.context().close();
 /* ---- G4 第一轮：首页只有日程、每场同样大小、微调 0.5 秒、没有演练 ---- */
 p=await open(b);await seed(p,[{name:'甲',src:'damai',in:3600e3},{name:'乙',src:'taobao',in:7200e3},{name:'丙',src:'jd',in:9000e3}]);await p.waitForTimeout(150);
 st=await p.evaluate(()=>{const c=[...document.querySelectorAll('.kd-next .kd-ncd')].map(x=>getComputedStyle(x).fontSize);return {n:c.length,same:new Set(c).size===1,clock:!!document.querySelector('.kd-clock,#kdSrcBtn'),drill:!!document.querySelector('#kdDrill')}});

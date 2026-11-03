@@ -25,7 +25,7 @@ targets:
     info:
       path: App/Info.plist
       properties:
-        CFBundleDisplayName: 卡点
+        CFBundleDisplayName: 准点时钟
         # 系统语言不是中文或英文时（日文、韩文等），权限说明等用英文
         CFBundleDevelopmentRegion: en
         CFBundleShortVersionString: $(MARKETING_VERSION)
@@ -85,7 +85,7 @@ targets:
     info:
       path: Widget/Info.plist
       properties:
-        CFBundleDisplayName: 卡点
+        CFBundleDisplayName: 准点时钟
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:

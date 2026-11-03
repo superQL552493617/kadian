@@ -6,12 +6,12 @@ enum LegalText {
     static var terms: String { L10n.lang == "en" ? termsEN : L10n.lang == "zh-Hant" ? termsHant : termsZH }
 
     static let privacyZH = """
-**卡点 隐私政策**
+**准点时钟 隐私政策**
 
-更新日期：2026 年 11 月 2 日
-生效日期：2026 年 11 月 2 日
+更新日期：2026 年 11 月 3 日
+生效日期：2026 年 11 月 3 日
 
-卡点（以下简称"本 App"）由个人开发者 lang qin 开发和运营。我们非常重视你的隐私，本政策说明本 App 会处理哪些信息、为什么处理以及你的权利。
+准点时钟（以下简称"本 App"）由个人开发者 lang qin 开发和运营。我们非常重视你的隐私，本政策说明本 App 会处理哪些信息、为什么处理以及你的权利。
 
 **一、我们不收集你的个人数据**
 
@@ -61,11 +61,11 @@ enum LegalText {
 """
 
     static let termsZH = """
-**卡点 用户协议**
+**准点时钟 用户协议**
 
-更新日期：2026 年 11 月 2 日
+更新日期：2026 年 11 月 3 日
 
-欢迎使用卡点（以下简称"本 App"）。本 App 由个人开发者 lang qin 开发和运营。使用本 App 前请仔细阅读本协议，点"同意并继续"或继续使用即表示你同意本协议。
+欢迎使用准点时钟（以下简称"本 App"）。本 App 由个人开发者 lang qin 开发和运营。使用本 App 前请仔细阅读本协议，点"同意并继续"或继续使用即表示你同意本协议。
 
 **一、服务内容**
 
@@ -73,7 +73,7 @@ enum LegalText {
 
 **二、费用**
 
-本 App 全部功能免费，没有广告，也没有任何付费项目。
+基础功能免费。会员权益需要付费开通：永久会员一次购买；季度会员每 3 个月自动续订，到期前 24 小时内扣费，可随时在系统「设置 → Apple 账户 → 订阅」里取消。费用由 Apple 收取，具体价格以购买页显示为准。
 
 **三、你的数据**
 
@@ -96,12 +96,12 @@ enum LegalText {
 """
 
     static let privacyEN = """
-**OnCue Privacy Policy**
+**OnTime Clock Privacy Policy**
 
-Last updated: November 2, 2026
-Effective: November 2, 2026
+Last updated: November 3, 2026
+Effective: November 3, 2026
 
-OnCue ("the App") is developed and operated by independent developer lang qin. We take your privacy seriously. This policy explains what information the App handles, why, and your rights.
+OnTime Clock ("the App") is developed and operated by independent developer lang qin. We take your privacy seriously. This policy explains what information the App handles, why, and your rights.
 
 **1. We don’t collect your personal data**
 
@@ -151,11 +151,11 @@ If this policy changes significantly, the App will ask you to read and agree to 
 """
 
     static let termsEN = """
-**OnCue Terms of Use**
+**OnTime Clock Terms of Use**
 
-Last updated: November 2, 2026
+Last updated: November 3, 2026
 
-Welcome to OnCue ("the App"). The App is developed and operated by independent developer lang qin. Please read these terms carefully before using the App. By tapping “Agree and continue” or continuing to use the App, you agree to these terms.
+Welcome to OnTime Clock ("the App"). The App is developed and operated by independent developer lang qin. Please read these terms carefully before using the App. By tapping “Agree and continue” or continuing to use the App, you agree to these terms.
 
 **1. Service**
 
@@ -163,7 +163,7 @@ The App offers a millisecond clock, platform time sync, sale countdowns, a float
 
 **2. Price**
 
-All features are free. There are no ads and nothing to pay for.
+Basic features are free. Member benefits are paid: Lifetime is a one-time purchase; Quarterly renews automatically every 3 months, is charged within 24 hours before the period ends, and can be cancelled anytime in Settings > Apple Account > Subscriptions. Apple charges the fee, and the price is shown on the purchase page.
 
 **3. Your data**
 
@@ -186,12 +186,12 @@ If these terms change significantly, the App will ask you to read and agree to t
 """
 
     static let privacyHant = """
-**卡點 隱私政策**
+**準點時鐘 隱私政策**
 
-更新日期：2026 年 11 月 2 日
-生效日期：2026 年 11 月 2 日
+更新日期：2026 年 11 月 3 日
+生效日期：2026 年 11 月 3 日
 
-卡點（以下簡稱"本 App"）由個人開發者 lang qin 開發和運營。我們非常重視你的隱私，本政策說明本 App 會處理哪些資訊、為什麼處理以及你的權利。
+準點時鐘（以下簡稱"本 App"）由個人開發者 lang qin 開發和運營。我們非常重視你的隱私，本政策說明本 App 會處理哪些資訊、為什麼處理以及你的權利。
 
 **一、我們不收集你的個人資料**
 
@@ -241,11 +241,11 @@ If these terms change significantly, the App will ask you to read and agree to t
 """
 
     static let termsHant = """
-**卡點 使用者協議**
+**準點時鐘 使用者協議**
 
-更新日期：2026 年 11 月 2 日
+更新日期：2026 年 11 月 3 日
 
-歡迎使用卡點（以下簡稱"本 App"）。本 App 由個人開發者 lang qin 開發和運營。使用本 App 前請仔細閱讀本協議，點"同意並繼續"或繼續使用即表示你同意本協議。
+歡迎使用準點時鐘（以下簡稱"本 App"）。本 App 由個人開發者 lang qin 開發和運營。使用本 App 前請仔細閱讀本協議，點"同意並繼續"或繼續使用即表示你同意本協議。
 
 **一、服務內容**
 
@@ -253,7 +253,7 @@ If these terms change significantly, the App will ask you to read and agree to t
 
 **二、費用**
 
-本 App 全部功能免費，沒有廣告，也沒有任何付費專案。
+基礎功能免費。會員權益需要付費開通：永久會員一次購買；季度會員每 3 個月自動續訂，到期前 24 小時內扣費，可隨時在系統「設定 → Apple 帳號 → 訂閱」裡取消。費用由 Apple 收取，具體價格以購買頁顯示為準。
 
 **三、你的資料**
 

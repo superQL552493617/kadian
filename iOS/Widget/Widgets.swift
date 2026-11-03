@@ -69,7 +69,7 @@ struct NextView: View {
             } else {
                 Spacer(minLength: 0)
                 Text(d.emptyTitle.isEmpty ? L("添加一场抢购") : d.emptyTitle).font(.system(size: 15, weight: .semibold)).foregroundStyle(ink)
-                Text(d.noteSub.isEmpty ? L("点一下打开卡点") : d.noteSub).font(.system(size: 12)).foregroundStyle(inkSoft)
+                Text(d.noteSub.isEmpty ? L("点一下打开准点时钟") : d.noteSub).font(.system(size: 12)).foregroundStyle(inkSoft)
                 Spacer(minLength: 0)
             }
         }

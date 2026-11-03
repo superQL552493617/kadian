@@ -1,11 +1,11 @@
 import Foundation
 import StoreKit
 
-/// 会员：年度（自动续期，可带免费试用）、月度（自动续期）、永久（一次性买断）。
+/// 会员：季度（3 个月自动续订，占 month 这一格）、永久（一次性买断）。
 /// 商品 ID 在 app.json 里配置，要和 App Store Connect 里创建的一致。价格文字由网页按语言拼，这里只给原始数据。
 @MainActor
 final class Purchases: ObservableObject {
-    static let kinds = ["year", "life", "month"]
+    static let kinds = ["life", "month"] // month 这一格现在是季度会员（3 个月自动续订）
     static func id(_ kind: String) -> String { kind == "year" ? AppConfig.vipYear : kind == "month" ? AppConfig.vipMonth : AppConfig.vipLife }
 
     @Published var products: [Product] = []

@@ -1,9 +1,9 @@
 {
   "_说明": "新 App 只改这个文件，然后运行 python3 tools/render.py。所有身份信息（名字、Bundle ID、商品 ID、网址）都从这里生成。",
   "slug": "kadian",
-  "name": "卡点",
-  "nameEn": "OnCue",
-  "nameHant": "卡點",
+  "name": "准点时钟",
+  "nameEn": "OnTime Clock",
+  "nameHant": "準點時鐘",
   "subtitle": "毫秒对时，抢票卡点不慌",
   "bundleId": "site.xiaomanhabit.kadian",
   "appGroup": "group.site.xiaomanhabit.kadian",
@@ -19,10 +19,10 @@
   "pagesBase": "https://superql552493617.github.io/kadian/",
   "marketingVersion": "1.0.0",
   "vip": {
-    "enabled": false,
+    "enabled": true,
     "groupName": "会员",
     "groupNameEn": "Premium",
-    "reviewNote": "本 App 全部功能免费，没有内购。",
+    "reviewNote": "会员权益：全程无广告、全部悬浮窗样式（配色和形状）、不限场次。免费用户可用对时、倒计时、悬浮窗、灵动岛和提醒。",
     "year": {
       "id": "site.xiaomanhabit.kadian.vip.year",
       "cny": "18",
@@ -38,29 +38,29 @@
       ]
     },
     "month": {
-      "id": "site.xiaomanhabit.kadian.vip.month",
-      "cny": "3.5",
-      "usd": "1.90",
+      "id": "site.xiaomanhabit.kadian.vip.quarter",
+      "cny": "8",
+      "usd": "0.99",
       "zh": [
-        "月度会员",
-        "按月订阅，解锁全部会员功能"
+        "季度会员",
+        "每 3 个月自动续订，解锁全部会员权益"
       ],
       "en": [
-        "Monthly",
-        "Unlock all premium features, billed monthly"
+        "Quarterly",
+        "Unlock all member benefits, renews every 3 months"
       ]
     },
     "life": {
       "id": "site.xiaomanhabit.kadian.vip.life",
-      "cny": "35",
-      "usd": "9.90",
+      "cny": "18",
+      "usd": "2.99",
       "zh": [
         "永久会员",
-        "一次购买，永久解锁全部会员功能"
+        "一次购买，永久解锁全部会员权益"
       ],
       "en": [
         "Lifetime",
-        "One-time purchase, all premium features forever"
+        "One-time purchase, all member benefits forever"
       ]
     }
   },
@@ -79,5 +79,5 @@
   "appStoreId": "",
   "lookupCountry": "cn",
   "altIcons": [],
-  "reviewNotes": "这是一款抢购卡点用的时钟工具，不需要注册登录，没有广告，没有内购，所有数据只保存在用户手机上。\n时间来自公开的网络授时接口（如国家授时中心 NTP、各平台公开的服务器时间接口），只读取时间，不读取任何用户信息。\n悬浮时钟使用系统画中画功能显示；灵动岛倒计时使用实时活动。\n首次打开会先请用户同意用户协议和隐私政策，然后是新手引导，可以直接点「跳过」。"
+  "reviewNotes": "这是一款抢购卡点用的时钟工具，不需要注册登录，有会员内购（永久会员、季度自动续订会员），所有数据只保存在用户手机上。\n时间来自公开的网络授时接口（如国家授时中心 NTP、各平台公开的服务器时间接口），只读取时间，不读取任何用户信息。\n悬浮时钟使用系统画中画功能显示；灵动岛倒计时使用实时活动。\n首次打开会先请用户同意用户协议和隐私政策，然后是新手引导，可以直接点「跳过」。"
 }
