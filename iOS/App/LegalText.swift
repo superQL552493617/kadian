@@ -34,7 +34,7 @@ enum LegalText {
 
 **四、意见反馈**
 
-"意见反馈"页面由第三方问卷服务提供。为了方便排查问题，打开问卷时会自动填写你的用户 ID 和 App 版本号；你在问卷里填写的内容由问卷服务按照其隐私政策处理，只有开发者能看到。不打开反馈页面时，不会传递任何信息。
+"意见反馈"页面由腾讯问卷（wj.qq.com）提供。为了方便排查问题，打开问卷时会自动填写你的用户 ID、会员类型和 App 版本号；你在问卷里填写的内容（包括你自愿留下的联系方式和截图）由问卷服务按照其隐私政策处理，只有开发者能看到。不打开反馈页面时，不会传递任何信息。
 
 **五、联网的功能**
 
@@ -124,7 +124,7 @@ The App generates a random 8-digit user ID on your device and stores it in the s
 
 **4. Feedback**
 
-The Feedback page is provided by a third-party survey service. To help troubleshoot, your user ID and app version are filled in automatically when the survey opens. What you enter is handled by the survey service under its privacy policy and is visible only to the developer. Nothing is sent unless you open the Feedback page.
+The Feedback page is provided by Tencent Survey (wj.qq.com). To help troubleshoot, your user ID, plan type and app version are filled in automatically when the survey opens. What you enter (including any contact details and screenshots you choose to leave) is handled by the survey service under its privacy policy and is visible only to the developer. Nothing is sent unless you open the Feedback page.
 
 **5. Features that use the network**
 
@@ -214,7 +214,7 @@ If these terms change significantly, the App will ask you to read and agree to t
 
 **四、意見反饋**
 
-"意見反饋"頁面由第三方問卷服務提供。為了方便排查問題，開啟問卷時會自動填寫你的使用者 ID 和 App 版本號；你在問卷裡填寫的內容由問卷服務按照其隱私政策處理，只有開發者能看到。不開啟反饋頁面時，不會傳遞任何資訊。
+"意見反饋"頁面由騰訊問卷（wj.qq.com）提供。為了方便排查問題，開啟問卷時會自動填寫你的使用者 ID、會員型別和 App 版本號；你在問卷裡填寫的內容（包括你自願留下的聯絡方式和截圖）由問卷服務按照其隱私政策處理，只有開發者能看到。不開啟反饋頁面時，不會傳遞任何資訊。
 
 **五、聯網的功能**
 

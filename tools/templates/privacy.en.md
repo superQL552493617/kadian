@@ -26,7 +26,7 @@ The App generates a random 8-digit user ID on your device and stores it in the s
 
 **4. Feedback**
 
-The Feedback page is provided by a third-party survey service. To help troubleshoot, your user ID and app version are filled in automatically when the survey opens. What you enter is handled by the survey service under its privacy policy and is visible only to the developer. Nothing is sent unless you open the Feedback page.
+The Feedback page is provided by Tencent Survey (wj.qq.com). To help troubleshoot, your user ID, plan type and app version are filled in automatically when the survey opens. What you enter (including any contact details and screenshots you choose to leave) is handled by the survey service under its privacy policy and is visible only to the developer. Nothing is sent unless you open the Feedback page.
 
 **5. Features that use the network**
 
