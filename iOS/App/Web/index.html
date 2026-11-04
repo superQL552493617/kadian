@@ -13925,7 +13925,7 @@ const offerResult=(title,at,how)=>{const nm=title&&!nameTouched?String(title).sl
 if(resAl){resAl.close();resAl=null}
 const past=tm!=null&&tm<=Date.now();
 const r=openAlert(`<h3>读到这场活动</h3>${nm?`<p class="kd-lr-n">${esc(nm)}</p>`:''}<p class="kd-lr-t">${tm!=null?`开抢时间 <span>${dayLabel(tm)}</span> <span>${hms(new Date(tm))}</span>`:'没读到开抢时间'}</p><p>${past?'这个时间已经过了，请确认。':'这是读到的结果，可能不准，请和平台核对。'}</p>
-<button class="al-btn pri" id="lrOk">填入</button><button class="al-btn sec" id="lrNo">不用</button>`,'neutral');resAl=r;
+<button class="al-btn pri" id="lrOk">填入</button><button class="al-btn sec" id="lrNo">不用</button>`,'neutral cf');resAl=r;
 let once=false;$('#lrOk',r.al).onclick=()=>{if(once)return;once=true;r.close();resAl=null;if(nm&&!nameTouched)c.name=nm;note='';noteWarn=false;if(tm!=null)fillTime(tm,how);redraw()};
 $('#lrNo',r.al).onclick=()=>{if(once)return;once=true;r.close();resAl=null;note='读到的内容没有填入，可以手动填写。';noteWarn=false;redraw()};return true};
 /* 换链接：上一条自动带出的名称、时间、平台先清掉，再按新链接读；手动填过的不动 */
