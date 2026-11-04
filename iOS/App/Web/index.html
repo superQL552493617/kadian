@@ -13879,6 +13879,16 @@ $('#calX',s2).onclick=close;$$('[data-cal]',s2).forEach(b=>b.onclick=()=>{close(
 /* 底部导航图标：和主界面一样的线条图标，选中黑色、没选灰色，不用小满记的彩色插画（老板 2026-11-04） */
 ICONS.today='<svg class="kd-ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.2" r="7.6"/><path d="M12 9.4v3.8l2.6 1.9M9.4 3h5.2M12 3v2.6M18.6 6.6l1.3-1.3"/></svg>';
 ICONS.me='<svg class="kd-ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.2" r="4.2"/><path d="M4.4 20.4c.8-4 3.8-6.4 7.6-6.4s6.8 2.4 7.6 6.4"/></svg>';
+/* 通知闹钟：用小满记的闹钟铃声（alm_1～10.caf），通知到点按这段铃声响，锁屏、后台也响（老板 2026-11-04） */
+const tonePreview=n=>{if(IN_APP)NN({cmd:'tone',n:n||undefined}).catch(()=>{});else if(n)TONE.play(n)};
+function pickAlarmTone(cur,done){let pick=cur;
+const draw=()=>`<div class="sheet-head"><button class="acx-tx" id="alX">取消</button><h3>通知闹钟</h3><button class="acx-tx save" id="alOk">完成</button></div>
+<p class="pm-sub">选一段铃声，点一下可以试听。通知到点会按这段铃声响，锁屏和后台也会响（手机静音、开了专注模式时按系统设置）。</p>
+<div class="list glass st-list kd-almlist"><button class="li${pick===0?' on':''}" data-tn="0"><span class="t">关<small>用系统默认提示音</small></span><span class="kd-almck">${pick===0?'✓':''}</span></button>
+${TONE.LIST.map(x=>`<button class="li${pick===x.n?' on':''}" data-tn="${x.n}"><span class="t">${esc(x.name)}<small>${esc(x.desc||'')}</small></span><span class="kd-almck">${pick===x.n?'✓':''}</span></button>`).join('')}</div>`;
+const {sh,close}=openSheet(draw(),()=>tonePreview(0));sh.classList.add('tall','kd-sh');
+const bind=()=>{$('#alX',sh).onclick=()=>{tonePreview(0);close()};$('#alOk',sh).onclick=()=>{tonePreview(0);close();done(pick)};
+$$('[data-tn]',sh).forEach(b=>b.onclick=()=>{pick=+b.dataset.tn;buzz();tonePreview(pick);const y=sh.scrollTop;sh.innerHTML='<div class="grab"></div>'+draw();bind();sh.scrollTop=y})};bind()}
 /* ---------- 添加 / 编辑一场抢购 ---------- */
 const AUTO_LEADS=[[10,'开抢前 10 秒'],[30,'开抢前 30 秒'],[60,'开抢前 60 秒']];
 const REMINDS=[[-1,'不提醒'],[1,'提前 1 分钟'],[5,'提前 5 分钟'],[10,'提前 10 分钟'],[30,'提前 30 分钟']];
@@ -13920,6 +13930,7 @@ ${more?`<div class="list glass st-list"><div class="li"><span class="t">灵动�
 ${LIVE_OFF&&c.live?'<div class="li"><span class="t kd-warn">实时活动权限被关了，请去系统设置打开</span></div>':''}
 <div class="li"><span class="t">自动打开抢购页<small>${c.link?'要停在准点时钟里才会自动打开；不在准点时钟时会发通知，点一下打开':'还没有链接，到点不会打开。先填抢购链接'}</small></span>${swHTML('ieAuto',!!(c.auto&&c.link),'自动打开抢购页')}</div>
 ${c.auto&&c.link?`<label class="li kd-lis"><span class="t">打开时间</span><span class="kd-rs">${(AUTO_LEADS.find(r=>r[0]===autoLeadOf(c))||AUTO_LEADS[1])[1]}<i>›</i></span><select id="ieAutoAt" aria-label="打开时间">${AUTO_LEADS.map(([v,n])=>`<option value="${v}"${autoLeadOf(c)===v?' selected':''}>${n}</option>`).join('')}</select></label>`:''}
+<button class="li kd-almli" id="ieAlm"><span class="t">通知闹钟<small>${c.remind>=0?'通知按选的铃声响，锁屏和后台也会响':'「通知」选了不提醒，闹钟不会响'}</small></span><span class="kd-rs">${+c.alarm>0?esc(TONE.name(+c.alarm)):'关'}<i>›</i></span></button>
 ${ent?`<button class="li" id="ieEntry"><span class="t">用平台入口<small>只能打开首页，自己搜索活动</small></span><span class="ar">›</span></button>`:''}</div>`:''}
 ${orig?'<div class="kd-eacts"><button id="ieCopy">复制这一场</button><button class="kd-del" id="ieDel">删除</button></div>':''}`};
 const {sh,close}=openSheet(draw());sh.classList.add('ie');
@@ -13989,6 +14000,7 @@ $('#ieScan',sh).onclick=()=>{openScan(u=>{useLink(u);redraw()})};
 $('#ieEntry',sh)&&($('#ieEntry',sh).onclick=()=>{seq++;note='';c.link=SRC(c.src).entry;buzz();toast('已填入，只能打开首页');redraw()});
 $('#ieSrc',sh).onchange=e=>{c.src=e.target.value;srcAuto=false;if(!SYNC[c.src]&&c.src!=='local')syncTime(c.src,true);redraw()};
 $('#ieRem',sh).onchange=e=>{c.remind=+e.target.value;redraw()};
+if($('#ieAlm',sh))$('#ieAlm',sh).onclick=()=>{buzz();pickAlarmTone(+c.alarm||0,n=>{c.alarm=n;redraw()})};
 $('#ieDate',sh).onchange=e=>{const v=e.target.value;if(!v)return;timeTouched=true;note='';seq++;if(c.at)setAt(v,hms(new Date(c.at)));else{dDate=v;if(dTime)setAt(dDate,dTime)}redraw()};
 $('#ieTime',sh).onchange=e=>{let v=e.target.value;if(!v)return;if(v.length===5)v+=':00';timeTouched=true;note='';seq++;if(c.at)setAt(dIn(c.at),v);else{dTime=v;if(dDate)setAt(dDate,dTime)}redraw()};
 $('#ieMore',sh).onclick=()=>{more=!more;buzz();redraw()};
@@ -14093,12 +14105,12 @@ let SYNC_T=0,SYNC_ASK=false;
 function syncNative(askPerm){if(!IN_APP)return;SYNC_ASK=SYNC_ASK||!!askPerm;clearTimeout(SYNC_T);SYNC_T=setTimeout(()=>{
 const ask=SYNC_ASK;SYNC_ASK=false;
 const up=upcoming().filter(x=>x.at>Date.now()),list=[];
-const push=(id,t,title,body,route)=>{if(t<=Date.now())return;const d=new Date(t);list.push({id,title,body,h:d.getHours(),m:d.getMinutes(),s:d.getSeconds(),date:dIn(t),route:route||'today'})};
+const push=(id,t,title,body,route,tone)=>{if(t<=Date.now())return;const d=new Date(t);list.push({id,title,body,h:d.getHours(),m:d.getMinutes(),s:d.getSeconds(),date:dIn(t),route:route||'today',...(+tone>0?{tone:+tone}:{})})};
 /* 选了自动打开：不在准点时钟时靠这条通知，点一下打开抢购页。和「提醒」分开算 */
 up.forEach(it=>{if(it.auto&&it.link)push(`kd-${it.id}-a`,phoneAt(it,false)-autoLeadOf(it)*1e3,`快开抢了：${it.name}`,T('点一下打开抢购页'),'open:'+it.id)});
 up.forEach(it=>{if(it.remind<0)return;const s=T(platName(it.src)),at=phoneAt(it,false),liveHint=it.live?T('点开准点时钟，开启灵动岛倒计时'):T('打开准点时钟看准时间');
-if(it.remind>1)push(`kd-${it.id}-r`,at-it.remind*60e3,`${it.remind} 分钟后开抢：${it.name}`,`${s} ${hms(new Date(it.at))} ${T('开抢')}，${liveHint}`);
-push(`kd-${it.id}-0`,at-60e3,`马上开抢：${it.name}`,it.live?`${T('还有 1 分钟')}，${liveHint}`:T('还有 1 分钟，打开准点时钟和悬浮窗准备好'))});
+if(it.remind>1)push(`kd-${it.id}-r`,at-it.remind*60e3,`${it.remind} 分钟后开抢：${it.name}`,`${s} ${hms(new Date(it.at))} ${T('开抢')}，${liveHint}`,'',it.alarm);
+push(`kd-${it.id}-0`,at-60e3,`马上开抢：${it.name}`,it.live?`${T('还有 1 分钟')}，${liveHint}`:T('还有 1 分钟，打开准点时钟和悬浮窗准备好'),'',it.alarm)});
 pushPip();
 NN({cmd:'notify',items:list,ask}).then(ok=>{const off=ok===false;if(off!==NOTIF_OFF){NOTIF_OFF=off;if(tab==='today')renderDay()}}).catch(()=>{});
 /* 只传最近一场；到秒；8 小时内 */
@@ -14619,6 +14631,11 @@ body.dark .alert.cf .kd-lr-opt:active{background:#48484A}
 .tabbar .tab.on svg.kd-ti{color:var(--kd-ink)}
 body.dark .tabbar .tab:not(.on) svg.kd-ti{color:#8E8E93}
 body.dark .tabbar .tab.on svg.kd-ti{color:#F2F2F7}
+.kd-almli{width:100%;text-align:left}
+.kd-almrow .kd-rl small{display:block;font-size:12px;font-weight:400;color:var(--kd-ink2);margin-top:1px}
+.kd-almlist .li{width:100%;text-align:left}
+.kd-almlist .li .t small{display:block;font-size:12.5px;color:var(--kd-ink2);margin-top:2px}
+.kd-almck{width:22px;text-align:center;font-weight:700;color:var(--kd-ink)}
 </style>
 </body>
 </html>
