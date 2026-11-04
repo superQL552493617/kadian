@@ -187,6 +187,17 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
                 let head = j["head"] as? String ?? "", docTitle = j["title"] as? String ?? ""
                 self.title = head.isEmpty ? docTitle : head
                 if let t = Self.findSaleTime(text) { self.saleTime = t; matched = true }
+                // 和 App 添加页用同一套结果：明确开抢字段、网址里的时间、按场次的候选
+                let f = DateFormatter(); f.dateFormat = "MM-dd HH:mm:ss"
+                let sell = (j["sell"] as? NSNumber)?.doubleValue ?? 0, urlAt = (j["urlAt"] as? NSNumber)?.doubleValue ?? 0
+                let cands = (j["cands"] as? [[String: Any]] ?? []).compactMap { c -> String? in
+                    guard let t = (c["t"] as? NSNumber)?.doubleValue, t > 0 else { return nil }
+                    let past = t < Date().timeIntervalSince1970 * 1000 ? "（已过，App 里不显示）" : ""
+                    return "\(c["d"] as? String ?? "") 场 开抢 \(f.string(from: Date(timeIntervalSince1970: t / 1000)))\(past)"
+                }
+                if sell > 0 { self.saleTime = f.string(from: Date(timeIntervalSince1970: sell / 1000)) + "（开抢字段）"; matched = true }
+                else if urlAt > 0 { self.saleTime = f.string(from: Date(timeIntervalSince1970: urlAt / 1000)) + "（网址里的时间）"; matched = true }
+                else if !cands.isEmpty { self.saleTime = "读到 \(cands.count) 个场次，App 里让用户选"; matched = true; for c in cands { self.add("场次候选：\(c)") } }
                 if !(j["item"] as? String ?? "").isEmpty { self.title = j["item"] as? String ?? "" }
             }
             if matched || n >= 8 { self.report(id); return }

@@ -92,7 +92,9 @@ final class LinkReader: NSObject, WKNavigationDelegate {
     while((x=re.exec(u))){if(x[1]){cur=x[1];continue}var o=x[0];if(!/ruleStage/.test(o))continue;var tt=+x[2],st=/"ruleStage":"?1[^0-9]/.test(o),k=cur||'?',v=bst[k];
     if(!v)ord.push(k);if(!v||(st&&!v.st)||(st===v.st&&tt<v.t))bst[k]={t:tt,st:st}}
     for(var i=0;i<ord.length&&i<12;i++)cands.push({d:ord[i]==='?'?'':ord[i],t:bst[ord[i]].t})}
-    return JSON.stringify({title:document.title||'',og:og?(og.content||''):'',head:best,item:item,sell:sell,cands:cands,text:t.slice(0,8000),href:location.href})})()
+    // 淘宝等跳转后的网址里直接带开抢时间：activityStartTime（毫秒）或 batchId（北京时间 年月日时分，比如 202611052000）
+    var ua=0,hm=/[?&]activityStartTime=(\\d{13})/.exec(location.href);if(hm)ua=+hm[1];else{var bm=/[?&]batchId=(20\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(?!\\d)/.exec(location.href);if(bm)ua=Date.UTC(+bm[1],+bm[2]-1,+bm[3],+bm[4]-8,+bm[5])}
+    return JSON.stringify({title:document.title||'',og:og?(og.content||''):'',head:best,item:item,sell:sell,urlAt:ua,cands:cands,text:t.slice(0,8000),href:location.href})})()
     """
 
     private func poll() {
@@ -105,7 +107,7 @@ final class LinkReader: NSObject, WKNavigationDelegate {
                 if Self.looksBlocked(text, href) {
                     self.finish(self.result(blocked: true)); return
                 }
-                if Self.hasSaleTime(text) || !(j["item"] as? String ?? "").isEmpty { self.finish(self.result(blocked: false)); return }
+                if Self.hasSaleTime(text) || !(j["item"] as? String ?? "").isEmpty || ((j["urlAt"] as? NSNumber)?.doubleValue ?? 0) > 0 { self.finish(self.result(blocked: false)); return }
             }
             if Date().timeIntervalSince(self.began) > 9 { self.finish(self.result(blocked: false)); return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.poll() }
@@ -129,7 +131,8 @@ final class LinkReader: NSObject, WKNavigationDelegate {
         let head = item.isEmpty ? (last["head"] as? String ?? "") : item, og = last["og"] as? String ?? "", title = last["title"] as? String ?? ""
         let text = last["text"] as? String ?? ""
         // sell 是大麦数据里明确的开抢字段（sellStartTime，毫秒）。有些场次不是第一轮，没有这个字段，就留空，不猜
-        let sell = (last["sell"] as? NSNumber)?.doubleValue ?? 0
+        let sell0 = (last["sell"] as? NSNumber)?.doubleValue ?? 0, urlAt = (last["urlAt"] as? NSNumber)?.doubleValue ?? 0
+        let sell = sell0 > 0 ? sell0 : urlAt
         return ["head": head, "og": og, "title": title, "text": blocked ? "" : text, "blocked": blocked, "sell": blocked ? 0 : sell, "cands": blocked ? [] : (last["cands"] as? [[String: Any]] ?? [])]
     }
 
