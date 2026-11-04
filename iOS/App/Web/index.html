@@ -13552,6 +13552,8 @@ function pushPip(){if(IN_APP&&PIP_ON)NN({cmd:'pipconfig',...pipMsg()}).catch(()=
 function floatStyle(el){const p=pipP(),c=PIP_PALS.find(x=>x.id===p.palette)||PIP_PALS[0];
 el.classList.remove('s-std','s-slim','s-thin');el.classList.add('s-'+p.shape);
 el.style.setProperty('--f-bg',c.bg);el.style.setProperty('--f-fg',c.fg);el.style.setProperty('--f-ms',p.msSame?c.fg:c.ms);el.style.setProperty('--f-al',c.al)}
+/* 卡片倒计时：秒后面的位数换色、缩小（老板 2026-11-04）；「毫秒和秒同色」打开时只缩小 */
+const cdHTML=t=>{const m=/^(.*?)(\.\d+)$/.exec(t);return m?`${m[1]}<span class="kd-msd${S&&S.prefs&&pipP().msSame?' same':''}">${m[2]}</span>`:t};
 const msPart=(v,n)=>n?'.'+String(Math.floor(((v%1000)+1000)%1000)).padStart(3,'0').slice(0,n):'';
 let CD_FIRED=null;
 function floatView(noLead){const p=pipP(),cur=curSrc(),t=pipItem(),left=t?atOf(t)-displayNow(t.src,noLead):null;
@@ -13608,7 +13610,7 @@ function nextHTML(it){const s=SRC(it.src),bad=it.src!=='local'&&!SYNC[it.src]&&F
 return `<section class="kd-next" style="--b:${s.hex}" data-it="${it.id}">
 <div class="kd-nh"><span class="kd-plat">${esc(platName(it.src))}</span></div>
 <b class="kd-nn">${esc(it.name)}</b>
-<div class="kd-ncd" ${past?'':`data-cd="${atOf(it)}" data-src="${it.src}"`}>${past?'已开抢':fmtCd(atOf(it)-displayNow(it.src))}</div>
+<div class="kd-ncd" ${past?'':`data-cd="${atOf(it)}" data-src="${it.src}"`}>${past?'已开抢':cdHTML(fmtCd(atOf(it)-displayNow(it.src)))}</div>
 <p class="kd-nt">${dayLabel(it.at)} ${hms(new Date(it.at))} 开抢</p>
 <div class="kd-nadj"><span>手动微调<small>加提前，减推迟</small></span><span class="kd-adj"><button data-adj="${it.id}" data-d="-500" aria-label="减 0.5 秒"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10"/></svg></button><b>${(+it.adj||0)>0?'+':(+it.adj||0)<0?'−':''}${(Math.abs(+it.adj||0)/1000).toFixed(1)} 秒</b><button data-adj="${it.id}" data-d="500" aria-label="加 0.5 秒"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></button></span></div>
 ${bad?`<p class="kd-nw">${s.name}时间还没对上，这个倒计时现在按手机时间算。</p>`:''}
@@ -13683,7 +13685,7 @@ const h=$('#kdHms'),m=$('#kdMs');if(h){const t=hms(d);if(h.textContent!==t)h.tex
 $$('.kd-float[data-live]').forEach(el=>paintFloat(el,!!DRILL));
 /* 声音全局有效：悬浮窗开着时由原生播（后台也响），没开时 App 在前台也响 */
 if(S&&pipP().sound&&!(IN_APP&&PIP_ON)&&!document.hidden){const t=nextLive(),l=t?atOf(t)-displayNow(t.src,!!DRILL):null;if(l!=null){const sc=Math.ceil(l/1000),w=pipP().alertSec||10;if(sc!==BEEP_S){if(BEEP_S!=null&&sc>0&&sc<=w)kdBeep(false);else if(BEEP_S===1&&sc<=0)kdBeep(true);BEEP_S=sc}}}
-$$('[data-cd]').forEach(el=>{const ms=+el.dataset.cd-displayNow(el.dataset.src);let t=ms>0?fmtCd(ms):(ms>-60e3&&!el.dataset.short?firedText(ms):'已开抢');if(el.dataset.short&&ms>0)t=t.replace(/\.\d+$/,'');if(el.textContent!==t)el.textContent=t;el.classList.toggle('soon',ms>0&&ms<60e3)});
+$$('[data-cd]').forEach(el=>{const ms=+el.dataset.cd-displayNow(el.dataset.src);let t=ms>0?fmtCd(ms):(ms>-60e3&&!el.dataset.short?firedText(ms):'已开抢');if(el.dataset.short&&ms>0)t=t.replace(/\.\d+$/,'');if(el.dataset.short){if(el.textContent!==t)el.textContent=t}else{const h=cdHTML(t);if(el.dataset.h!==h){el.dataset.h=h;el.innerHTML=h}}el.classList.toggle('soon',ms>0&&ms<60e3)});
 if(S&&!document.hidden){for(const it of items()){const n=platformNow(it.src);if(it.auto&&it.link&&!it.opened&&n>=it.at-autoLeadOf(it)*1e3&&n<it.at+60e3){it.opened=1;save();toast('快开抢了，已打开抢购页');openLink(it.id)}}}
 if(DRILL)DRILL.frame();
 /* 一场到点就收进「已结束」；开抢过了 60 秒，悬浮窗换到下一场 */
@@ -14607,6 +14609,9 @@ body.dark .sw-del{background:#D9473F}
 body.dark .alert.cf .kd-lr-opt{background:#3A3A3C;color:#fff}
 body.dark .alert.cf .kd-lr-opt small{color:#AEAEB2}
 body.dark .alert.cf .kd-lr-opt:active{background:#48484A}
+.kd-ncd .kd-msd{font-size:.62em;font-weight:700;color:var(--kd-ms);letter-spacing:0;margin-left:1px}
+.kd-ncd .kd-msd.same{color:inherit}
+.kd-ncd.soon .kd-msd{color:inherit}
 </style>
 </body>
 </html>

@@ -273,7 +273,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
             if d > 0 { v.main = String(format: "%d天 %02d:%02d:%02d", d, h, m, s) }
             else if h > 0 { v.main = String(format: "%02d:%02d:%02d", h, m, s) }
             else { v.main = String(format: "%02d:%02d", m, s) }
-            if d == 0 { v.ms = Self.msPart(l, msDigits) }
+            v.ms = Self.msPart(l, msDigits) // 超过 1 天也显示（老板 2026-11-04）；放不下时上面会自动缩字号
             return v
         }
         let t = now + offset + adj + lead
