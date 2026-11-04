@@ -13571,7 +13571,7 @@ function kdBeep(end){if(IN_APP){NN({cmd:'beep',end:!!end}).catch(()=>{});return}
 o.frequency.value=end?1320:880;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(end?.16:.07,t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+(end?.32:.07));o.connect(g).connect(AUD.destination);o.start(t);o.stop(t+.35)}catch(e){}}
 
 /* ---------- 首页 ---------- */
-let SHOW_ENDED=false,FOLLOW=null,PIP_LOST=false,NEXT_SHOWN=null,NEXT_CK=0;
+let UP_SHOWN=-1,SHOW_ENDED=false,FOLLOW=null,PIP_LOST=false,NEXT_SHOWN=null,NEXT_CK=0;
 function renderToday(){
 $('#view').innerHTML=`<header class="top" id="hdr"></header><div id="pane"></div>`;
 renderDay();
@@ -13580,7 +13580,8 @@ function renderDay(){
 const now=new Date();
 $('#hdr').innerHTML=`<div class="hd-l"></div><div class="hd-title open"><span class="hd-main"><b>${esc(appName())}</b></span>
 <span class="hd-sub">${now.getMonth()+1}月${now.getDate()}日 周${WD[now.getDay()]}</span></div><div class="hd-r"></div>`;
-const nw=Date.now(),up=upcoming().sort((a,b)=>(a.at<=nw)-(b.at<=nw)||a.at-b.at),next=nextLive(),old=ended();NEXT_SHOWN=next?next.id:null;
+/* 老板 2026-11-03：过了开抢时间（按平台时间）马上收进「已结束」，不留在上面 */
+const live=x=>atOf(x)-displayNow(x.src)>0,up=items().filter(live).sort((a,b)=>a.at-b.at),next=nextLive(),old=items().filter(x=>!live(x)).sort((a,b)=>b.at-a.at);NEXT_SHOWN=next?next.id:null;UP_SHOWN=up.length;
 $('#pane').innerHTML=`
 ${IN_APP?'':'<p class="kd-demo">网页预览：时间偏差是模拟数据，装进 App 后会真实对时。<button id="kdPv">预览开关</button></p>'}
 <div class="tray-head kd-head"><h2>抢购日程</h2><button class="kd-pset2" id="kdPset">悬浮窗设置<i>›</i></button><button class="th-flat th-add" id="kdAdd" aria-label="添加抢购">${ADD_DOODLE}</button></div>
@@ -13683,8 +13684,8 @@ if(S&&pipP().sound&&!(IN_APP&&PIP_ON)&&!document.hidden){const t=nextLive(),l=t?
 $$('[data-cd]').forEach(el=>{const ms=+el.dataset.cd-displayNow(el.dataset.src);let t=ms>0?fmtCd(ms):(ms>-60e3&&!el.dataset.short?firedText(ms):'已开抢');if(el.dataset.short&&ms>0)t=t.replace(/\.\d+$/,'');if(el.textContent!==t)el.textContent=t;el.classList.toggle('soon',ms>0&&ms<60e3)});
 if(S&&!document.hidden){for(const it of items()){const n=platformNow(it.src);if(it.auto&&it.link&&!it.opened&&n>=it.at-autoLeadOf(it)*1e3&&n<it.at+60e3){it.opened=1;save();toast('快开抢了，已打开抢购页');openLink(it.id)}}}
 if(DRILL)DRILL.frame();
-/* 开抢过了 60 秒，「下一场」卡片要换到真正的下一场，和悬浮窗保持同一场 */
-if(S&&tab==='today'&&!document.hidden&&performance.now()-NEXT_CK>400){NEXT_CK=performance.now();const nl=nextLive();if((nl?nl.id:null)!==NEXT_SHOWN&&$('#hdr'))renderDay()}
+/* 一场到点就收进「已结束」；开抢过了 60 秒，悬浮窗换到下一场 */
+if(S&&tab==='today'&&!document.hidden&&performance.now()-NEXT_CK>400){NEXT_CK=performance.now();const nl=nextLive(),nu=items().filter(x=>atOf(x)-displayNow(x.src)>0).length;if(((nl?nl.id:null)!==NEXT_SHOWN||nu!==UP_SHOWN)&&$('#hdr'))renderDay()}
 requestAnimationFrame(()=>tick())}
 function openLink(id){const it=items().find(x=>x.id===id);if(!it||!it.link)return;const u=normUrl(it.link);if(!u){toast('这不是有效的链接，请重新填写','gray');return}
 if(IN_APP){NN({cmd:'openapp',url:u}).then(r=>{if(r==='browser')toast('没能跳到 App，先用浏览器打开了。请检查有没有装这个 App','gray');else if(r===false)toast('打不开这个链接','gray')}).catch(()=>toast('打不开这个链接','gray'));return}
