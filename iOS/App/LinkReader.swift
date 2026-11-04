@@ -107,7 +107,9 @@ final class LinkReader: NSObject, WKNavigationDelegate {
                 if Self.looksBlocked(text, href) {
                     self.finish(self.result(blocked: true)); return
                 }
-                if Self.hasSaleTime(text) || !(j["item"] as? String ?? "").isEmpty || ((j["urlAt"] as? NSNumber)?.doubleValue ?? 0) > 0 { self.finish(self.result(blocked: false)); return }
+                // 拿到平台详细数据或网址里的时间就结束；页面文字看着有时间，也再等 3 秒让详细数据回来（大麦的场次时间在详细数据里）
+                let gotData = !(j["item"] as? String ?? "").isEmpty || ((j["urlAt"] as? NSNumber)?.doubleValue ?? 0) > 0
+                if gotData || (Self.hasSaleTime(text) && Date().timeIntervalSince(self.began) > 3) { self.finish(self.result(blocked: false)); return }
             }
             if Date().timeIntervalSince(self.began) > 9 { self.finish(self.result(blocked: false)); return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.poll() }

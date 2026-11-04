@@ -179,7 +179,7 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
         guard id == runId else { return }
         web.evaluateJavaScript(LinkReader.snapshot) { [weak self] res, _ in
             guard let self, id == self.runId else { return }
-            var matched = false
+            var matched = false, gotData = false
             if let s = res as? String, let d = s.data(using: .utf8), let j = try? JSONSerialization.jsonObject(with: d) as? [String: Any] {
                 let text = j["text"] as? String ?? ""
                 self.pageText = String(text.prefix(2000))
@@ -195,12 +195,14 @@ final class LinkTestModel: NSObject, ObservableObject, WKNavigationDelegate {
                     let past = t < Date().timeIntervalSince1970 * 1000 ? "（已过，App 里不显示）" : ""
                     return "\(c["d"] as? String ?? "") 场 开抢 \(f.string(from: Date(timeIntervalSince1970: t / 1000)))\(past)"
                 }
+                gotData = !(j["item"] as? String ?? "").isEmpty || urlAt > 0
                 if sell > 0 { self.saleTime = f.string(from: Date(timeIntervalSince1970: sell / 1000)) + "（开抢字段）"; matched = true }
                 else if urlAt > 0 { self.saleTime = f.string(from: Date(timeIntervalSince1970: urlAt / 1000)) + "（网址里的时间）"; matched = true }
                 else if !cands.isEmpty { self.saleTime = "读到 \(cands.count) 个场次，App 里让用户选"; matched = true; for c in cands { self.add("场次候选：\(c)") } }
                 if !(j["item"] as? String ?? "").isEmpty { self.title = j["item"] as? String ?? "" }
             }
-            if matched || n >= 8 { self.report(id); return }
+            // 和 App 一样：拿到详细数据就停；只是页面文字有时间，再多等几秒
+            if gotData || (matched && n >= 3) || n >= 8 { self.report(id); return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.read(n + 1, id) }
         }
     }
