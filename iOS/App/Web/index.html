@@ -12814,10 +12814,11 @@ bind();
 }
 function openVip(){
 let pick='life',info=null,busy=false;
-const zh=/^zh/i.test(navigator.language||'zh');
+const zh=LANG!=='en';
 /* 没连上 App Store（或网页预览）时按地区显示默认价 */
 /* 价格以 App Store 为准（App 传来的 offers）；网页预览或没连上时显示 app.json 里的默认价 */
-const local=(raw)=>{const of=(raw&&raw.offers)||{},cny=/^zh/i.test(navigator.language||'zh');
+/* 默认价的币种按界面语言定：中文界面显示人民币。原来看 navigator.language，App 里它可能是英文，就显示成了美元（老板 2026-11-03） */
+const local=(raw)=>{const of=(raw&&raw.offers)||{},cny=LANG!=='en';
 const dft=k=>{const v=(window.APP&&APP.vipPrices&&APP.vipPrices[k])||{};return cny?('¥'+(v.cny||'')):('$'+(v.usd||''))};
 const pr=k=>(of[k]&&of[k].price)||dft(k);
 const plan=raw&&raw.plan?raw.plan:planOf(),m=pr('month'),l=pr('life');
