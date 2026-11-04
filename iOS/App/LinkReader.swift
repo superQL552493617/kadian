@@ -88,7 +88,7 @@ final class LinkReader: NSObject, WKNavigationDelegate {
     var item='',sell=0,u='',Q=String.fromCharCode(92)+'"',cap=window.__kdCap||[];
     for(var c=0;c<cap.length;c++){if(cap[c].src.indexOf('item.detail.getdetail')<0)continue;var b0=cap[c].body.split(Q).join('"').split(Q).join('"'),m=/"itemName":"([^"]+)"/.exec(b0);if(m){item=m[1];u=b0;var w=/"sellStartTime":"?(\\d{13})/.exec(u);if(w)sell=+w[1];break}}
     // 没有 sellStartTime 时：大麦按场次列出「条件退」规则，每场第一阶段（ruleStage 1）从开卖开始，取它的 startTime 当候选，交给用户选（老板 2026-11-03）
-    var cands=[];if(!sell&&u){var cur='',bst={},ord=[],x,re=/"performDate":"([^"]{4,40})"|\{[^{}]*"startTime":"?(\\d{13})[^{}]*\}/g;
+    var cands=[];if(!sell&&u){var cur='',bst={},ord=[],x,re=/"performDate":"([^"]{4,40})"|\\{[^{}]*"startTime":"?(\\d{13})[^{}]*\\}/g;
     while((x=re.exec(u))){if(x[1]){cur=x[1];continue}var o=x[0];if(!/ruleStage/.test(o))continue;var tt=+x[2],st=/"ruleStage":"?1[^0-9]/.test(o),k=cur||'?',v=bst[k];
     if(!v)ord.push(k);if(!v||(st&&!v.st)||(st===v.st&&tt<v.t))bst[k]={t:tt,st:st}}
     for(var i=0;i<ord.length&&i<12;i++)cands.push({d:ord[i]==='?'?'':ord[i],t:bst[ord[i]].t})}
