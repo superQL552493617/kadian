@@ -2515,5 +2515,11 @@
 "对时、倒计时、悬浮窗（全部样式）、灵动岛和提醒，所有人都能用。": "Time sync, countdowns, the floating window (all styles), Dynamic Island and reminders are free for everyone.",
 "{}/季": "{0}/qtr",
 "一次购买，不会自动续订": "One-time purchase, no auto-renewal",
-"· 相册、相机、通知只在你用到相关功能时才会请求": "· Photos, camera and notifications are only requested when you use those features"
+"· 相册、相机、通知只在你用到相关功能时才会请求": "· Photos, camera and notifications are only requested when you use those features",
+"通知闹钟": "Alarm sound",
+"在「更多选项」里选一段铃声，这一场的提醒按它响，锁屏和后台也会响。": "Pick a sound under More options. This sale's reminders will play it, even on the Lock Screen and in the background.",
+"用系统默认提示音": "Uses the default system sound",
+"选一段铃声，点一下可以试听。通知到点会按这段铃声响，锁屏和后台也会响（手机静音、开了专注模式时按系统设置）。": "Pick a sound; tap to preview. Reminders will play it, even on the Lock Screen and in the background (Silent mode and Focus follow your iPhone settings).",
+"通知按选的铃声响，锁屏和后台也会响": "Reminders play this sound, even on the Lock Screen",
+"「通知」选了不提醒，闹钟不会响": "Notification is off, so no sound will play"
 }
