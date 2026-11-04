@@ -85,8 +85,14 @@ final class LinkReader: NSObject, WKNavigationDelegate {
     var els=document.querySelectorAll('h1,h2,h3,[class*=title],[class*=Title],[class*=name],[class*=Name]');
     for(var i=0;i<els.length&&i<200;i++){var e=els[i],s=(e.innerText||'').trim();if(s.length<4||s.length>80||s.indexOf('\\n')>=0)continue;
     var r=e.getBoundingClientRect();if(r.height===0||r.top>innerHeight)continue;var f=parseFloat(getComputedStyle(e).fontSize)||0;if(f>bs){bs=f;best=s}}
-    var item='',sell=0,cap=window.__kdCap||[];for(var c=0;c<cap.length;c++){if(cap[c].src.indexOf('item.detail.getdetail')<0)continue;var m=/"itemName":"([^"\\\\]+)"/.exec(cap[c].body);if(m){item=m[1];var w=/"sellStartTime":"?(\\d{13})/.exec(cap[c].body);if(w)sell=+w[1];break}}
-    return JSON.stringify({title:document.title||'',og:og?(og.content||''):'',head:best,item:item,sell:sell,text:t.slice(0,8000),href:location.href})})()
+    var item='',sell=0,u='',Q=String.fromCharCode(92)+'"',cap=window.__kdCap||[];
+    for(var c=0;c<cap.length;c++){if(cap[c].src.indexOf('item.detail.getdetail')<0)continue;var b0=cap[c].body.split(Q).join('"').split(Q).join('"'),m=/"itemName":"([^"]+)"/.exec(b0);if(m){item=m[1];u=b0;var w=/"sellStartTime":"?(\\d{13})/.exec(u);if(w)sell=+w[1];break}}
+    // 没有 sellStartTime 时：大麦按场次列出「条件退」规则，每场第一阶段（ruleStage 1）从开卖开始，取它的 startTime 当候选，交给用户选（老板 2026-11-03）
+    var cands=[];if(!sell&&u){var cur='',bst={},ord=[],x,re=/"performDate":"([^"]{4,40})"|\{[^{}]*"startTime":"?(\\d{13})[^{}]*\}/g;
+    while((x=re.exec(u))){if(x[1]){cur=x[1];continue}var o=x[0];if(!/ruleStage/.test(o))continue;var tt=+x[2],st=/"ruleStage":"?1[^0-9]/.test(o),k=cur||'?',v=bst[k];
+    if(!v)ord.push(k);if(!v||(st&&!v.st)||(st===v.st&&tt<v.t))bst[k]={t:tt,st:st}}
+    for(var i=0;i<ord.length&&i<12;i++)cands.push({d:ord[i]==='?'?'':ord[i],t:bst[ord[i]].t})}
+    return JSON.stringify({title:document.title||'',og:og?(og.content||''):'',head:best,item:item,sell:sell,cands:cands,text:t.slice(0,8000),href:location.href})})()
     """
 
     private func poll() {
@@ -124,7 +130,7 @@ final class LinkReader: NSObject, WKNavigationDelegate {
         let text = last["text"] as? String ?? ""
         // sell 是大麦数据里明确的开抢字段（sellStartTime，毫秒）。有些场次不是第一轮，没有这个字段，就留空，不猜
         let sell = (last["sell"] as? NSNumber)?.doubleValue ?? 0
-        return ["head": head, "og": og, "title": title, "text": blocked ? "" : text, "blocked": blocked, "sell": blocked ? 0 : sell]
+        return ["head": head, "og": og, "title": title, "text": blocked ? "" : text, "blocked": blocked, "sell": blocked ? 0 : sell, "cands": blocked ? [] : (last["cands"] as? [[String: Any]] ?? [])]
     }
 
     private func finish(_ r: [String: Any]) {

@@ -13860,8 +13860,10 @@ if(!segs.length)return '';let b=segs.reduce((a,s)=>s.length>a.length?s:a,'');con
 const LINK_BAD_TITLE=/^(商品详情|详情|详情页|大麦|大麦网|淘宝|淘宝网|天猫|京东|猫眼|拼多多|美团|12306|登录|首页|温馨提示|提示|错误|安全验证|验证)$/;
 async function fetchLinkInfo(url){if(IN_APP){const r=await Promise.race([NN({cmd:'linkinfo',url}),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),11000))])||{};
 const title=[r.head,r.og,r.title].map(x=>(x||'').trim().replace(/\s*【(图片 价格 品牌 评论|网上订票)】\s*-\s*\S+$/,'').replace(/\s*[-_|]\s*(京东|大麦网|淘宝网|天猫|猫眼|拼多多|美团)$/,'')).find(x=>x&&!LINK_BAD_TITLE.test(x))||'';
-return {title,at:+r.sell>0?+r.sell:r.text?parseSaleTime(r.text):null,blocked:!!r.blocked}}
-if(PV.linkSim){await new Promise(f=>setTimeout(f,500));const d=new Date(Date.now()+864e5);d.setHours(12,0,0,0);return {title:'模拟读到的活动（预览）',at:+d}}throw new Error('preview')}
+/* 没有明确开抢字段时，原生按场次给出候选；已经过了的不呈现（老板 2026-11-03） */
+const cands=+r.sell>0?[]:(Array.isArray(r.cands)?r.cands:[]).filter(x=>+x.t>Date.now()).map(x=>({d:String(x.d||'').replace(/^20\d\d[-.]/,''),t:+x.t}));/* 按场次顺序，不按开抢时间排 */
+return {title,at:+r.sell>0?+r.sell:cands.length===1?cands[0].t:cands.length?null:r.text?parseSaleTime(r.text):null,cands:cands.length>1?cands:[],blocked:!!r.blocked}}
+if(PV.linkSim){await new Promise(f=>setTimeout(f,500));const d=new Date(Date.now()+864e5);d.setHours(12,0,0,0);if(/damai/.test(url)){const e=new Date(+d+2*864e5);e.setHours(13,18,0,0);return {title:'模拟读到的活动（预览）',at:null,cands:[{d:'11-27 周五 19:00',t:+e},{d:'11-28 周六 19:00',t:+d}]}}return {title:'模拟读到的活动（预览）',at:+d}}throw new Error('preview')}
 
 /* 从日历选时间：把名字沾边、写着开抢的排前面，选哪条由用户定，不自动填 */
 function calScore(title,name){const t=title||'';let n=/开抢|开售|开票|抢票|抢购|预售|大麦|猫眼|淘宝|拼多多|京东/.test(t)?1:0;
@@ -13928,6 +13930,13 @@ const r=openAlert(`<h3>读到这场活动</h3>${nm?`<p class="kd-lr-n">${esc(nm)
 <button class="al-btn pri" id="lrOk">填入</button><button class="al-btn sec" id="lrNo">不用</button>`,'neutral cf');resAl=r;
 let once=false;$('#lrOk',r.al).onclick=()=>{if(once)return;once=true;r.close();resAl=null;if(nm&&!nameTouched)c.name=nm;note='';noteWarn=false;if(tm!=null)fillTime(tm,how);redraw()};
 $('#lrNo',r.al).onclick=()=>{if(once)return;once=true;r.close();resAl=null;note='读到的内容没有填入，可以手动填写。';noteWarn=false;redraw()};return true};
+/* 读到几个场次：列出来让用户选，都不对就手动填或从日历添加（老板 2026-11-03） */
+const offerChoice=(title,cands)=>{const nm=title&&!nameTouched?String(title).slice(0,60):'';if(resAl){resAl.close();resAl=null}
+const r=openAlert(`<h3>读到 ${cands.length} 个场次</h3>${nm?`<p class="kd-lr-n">${esc(nm)}</p>`:''}<p>选你要抢的那一场。这是读到的结果，可能不准，请和平台核对。</p>
+<div class="kd-lr-list">${cands.map((x,i)=>`<button class="kd-lr-opt" data-ci="${i}">${x.d?`<small>${esc(x.d)} 场</small>`:''}<b>开抢 ${dayLabel(x.t)} ${hms(new Date(x.t))}</b></button>`).join('')}</div>
+<button class="al-btn sec" id="lrNo">都不对，手动填</button>`,'neutral cf');resAl=r;
+let once=false;$$('[data-ci]',r.al).forEach(b=>b.onclick=()=>{if(once)return;once=true;buzz();r.close();resAl=null;const x=cands[+b.dataset.ci];if(nm&&!nameTouched)c.name=nm;note='';noteWarn=false;linkMiss=false;fillTime(x.t,'从链接');redraw()});
+$('#lrNo',r.al).onclick=()=>{if(once)return;once=true;r.close();resAl=null;if(nm&&!nameTouched)c.name=nm;linkMiss=true;note='可以手动填开抢时间，或者点「从日历添加」。';noteWarn=false;redraw()}};
 /* 换链接：上一条自动带出的名称、时间、平台先清掉，再按新链接读；手动填过的不动 */
 const useLink=v=>{const raw=v.trim(),url=normUrl(raw);if(raw&&raw===c.link)return;
 const my=++seq,prev=c.link;note='';noteWarn=false;linkMiss=false;if(resAl){resAl.close();resAl=null}
@@ -13945,7 +13954,8 @@ if(!url)return;
 const hadText=(tt||nameTouched)&&(at||timeTouched);if(hadText||!url){offerResult(tt,at,'从分享文字');return}
 const kept=note,keptW=noteWarn;note='正在读取标题和开抢时间…';noteWarn=false;
 fetchLinkInfo(url).then(r=>{if(my!==seq||!sh.isConnected)return;note=kept;noteWarn=keptW;
-const atV=at||(typeof r.at==='number'?r.at:null),how=at?'从分享文字':'从链接';linkMiss=atV==null;
+const atV=at||(typeof r.at==='number'?r.at:null),how=at?'从分享文字':'从链接',many=!at&&!timeTouched&&r.cands&&r.cands.length>1;linkMiss=atV==null&&!many;
+if(many){redraw();offerChoice(tt||r.title,r.cands);return}
 if(r.blocked&&!at&&!note){note='平台要求验证，读不到这个页面，请手动填写。';noteWarn=true}
 else if(atV==null&&!timeTouched&&!note){note='这个链接读不到开抢时间，请按平台公布的时间填写。';noteWarn=true}
 redraw();offerResult(tt||r.title,atV,how)}).catch(e=>{if(my!==seq||!sh.isConnected)return;
@@ -14587,6 +14597,14 @@ body.dark .sw-del{background:#D9473F}
 /* 已结束：左滑时红色删除按钮不能透出来，变淡的只是内容 */
 .sw-row .kd-it.past{opacity:1}
 .sw-row .kd-it.past>*{opacity:.55}
+.alert.cf .kd-lr-list{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px;max-height:46vh;overflow:auto}
+.alert.cf .kd-lr-opt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:12px 16px;border-radius:16px;background:#F2F2F4;color:#1C1C1E;text-align:left}
+.alert.cf .kd-lr-opt small{font-size:12.5px;color:#8E8E93}
+.alert.cf .kd-lr-opt b{font-size:15.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.alert.cf .kd-lr-opt:active{background:#E5E5EA}
+body.dark .alert.cf .kd-lr-opt{background:#3A3A3C;color:#fff}
+body.dark .alert.cf .kd-lr-opt small{color:#AEAEB2}
+body.dark .alert.cf .kd-lr-opt:active{background:#48484A}
 </style>
 </body>
 </html>
