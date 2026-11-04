@@ -122,6 +122,7 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         if let v = b["secUnit"] as? String { secUnit = v }
         if active { restartTimer() }
         callVC?.preferredContentSize = sizeForShape()
+        if let h = host { let ar = sizeForShape(); h.frame.size.height = h.bounds.width * ar.height / ar.width; if !usedCall { layer?.frame = h.bounds } }
         lastKey = ""
     }
 
@@ -187,8 +188,11 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     private func prepare(call: Bool) -> Bool {
         if controller != nil { return true }
         guard let win = UIApplication.topViewController()?.view.window else { return false }
-        // 来源视图很小，放在屏幕顶部：回到 App 时窗口往这里收，内容已隐藏，看起来就是直接消失
-        let v = UIView(frame: CGRect(x: win.bounds.midX - 60, y: 60, width: 120, height: 50))
+        // 来源视图放在屏幕顶部：回到 App 时窗口往这里收，内容已隐藏，看起来就是直接消失。
+        // 老板 2026-11-03：改成退出时自动开启后窗口变小了。系统自动开启时按来源视图定初始大小，
+        // 原来只有 120×50，现在做成接近屏幕宽、和卡片同比例（透明、不挡点击）
+        let ar = sizeForShape(), vw = win.bounds.width - 24, vh = vw * ar.height / ar.width
+        let v = UIView(frame: CGRect(x: 12, y: win.safeAreaInsets.top + 8, width: vw, height: vh))
         v.isUserInteractionEnabled = false
         let l = AVSampleBufferDisplayLayer()
         l.frame = v.bounds
