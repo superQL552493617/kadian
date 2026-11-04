@@ -34,8 +34,12 @@ final class Purchases: ObservableObject {
     func loadProducts() async {
         guard AppConfig.vipEnabled else { return }
         products = (try? await Product.products(for: Self.kinds.map(Self.id))) ?? []
+        // 苹果按哪个地区给价格（测试版会员页显示出来，查币种用）
+        storefront = await Storefront.current?.countryCode ?? ""
         if let y = product("year") { trialEligible = await y.subscription?.isEligibleForIntroOffer ?? false }
     }
+
+    var storefront = ""
 
     func product(_ kind: String) -> Product? { products.first { $0.id == Self.id(kind) } }
 
@@ -76,7 +80,7 @@ final class Purchases: ObservableObject {
             let c = Calendar.current.dateComponents([.year, .month, .day], from: e)
             exp = String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
         }
-        return ["plan": plan, "test": isTestVIP, "expires": exp, "offers": offers]
+        return ["plan": plan, "test": isTestVIP, "expires": exp, "offers": offers, "storefront": storefront]
     }
 
     @discardableResult

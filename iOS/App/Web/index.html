@@ -12841,7 +12841,7 @@ ${d.plan!=='free'?`<span class="vp2-st">${mi('crown',15,2.2)}你是${d.name}${d.
 <div class="vp2-foot"><div class="vp2-plans" data-nodrag>${['life','month'].map(card).join('')}</div>
 <button class="vp2-cta" id="vpGo"${o.ctaOn?'':' disabled'}>${o.ctaOn?mi('crown',19,2.1):''}<span>${o.cta}</span></button>
 <p class="vp2-sub">${o.ctaSub}</p>
-<p class="vp2-legal">开通即表示同意<button data-doc="terms">《用户协议》</button>和<button data-doc="privacy">《隐私政策》</button></p></div>`};
+<p class="vp2-legal">开通即表示同意<button data-doc="terms">《用户协议》</button>和<button data-doc="privacy">《隐私政策》</button></p>${window.__XM_TEST__&&info&&info.storefront!==undefined?`<p class="vp2-legal">测试版诊断：App Store 地区 ${esc(info.storefront||'未知')}，币种 ${esc(((info.offers||{}).life||{}).currency||'未拿到')}</p>`:''}</div>`};
 const {sh,close}=openSheet(draw(),()=>{if(tab==='me')renderMe();if(tab==='ai')renderAI()});sh.classList.add('full','vp2');
 const redraw=()=>{const x=$('.vp2-plans',sh),sl=x?x.scrollLeft:0,y=sh.scrollTop;sh.innerHTML='<div class="grab"></div>'+draw();bind();const nx=$('.vp2-plans',sh);if(nx){nx.scrollLeft=sl;const on=$('.vp2-plan.on',nx);on&&on.scrollIntoView({behavior:'smooth',inline:'nearest',block:'nearest'})}sh.scrollTop=y};
 const VMSG={bought:'开通成功，谢谢你的支持',pending:'购买正在等待确认',restored:'已恢复会员',nothing:'没有找到可以恢复的购买','restore-failed':'恢复失败，请稍后再试','store-offline':'暂时连不上 App Store，请稍后再试'};
