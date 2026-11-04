@@ -13179,13 +13179,13 @@ addEventListener('resize',place);
 requestAnimationFrame(()=>{ov.classList.add('show');show()});
 }
 /* 打开 App 后：开屏页、密码锁、新建习惯页都结束了再出来 */
-/* 测试包：每次打开 App 都出现新手引导，方便查看；正式版只出现一次 */
-let GUIDE_SHOWN_THIS_LAUNCH=false;
-function maybeGuide(){const testEvery=IN_APP&&window.__XM_TEST__===true&&!GUIDE_SHOWN_THIS_LAUNCH;
-if(S.prefs.guided&&!testEvery)return;let n=0;const t=setInterval(()=>{n++;if(S.prefs.guided&&!testEvery){clearInterval(t);return}
+/* 新手引导只在第一次使用时出现：更新版本、测试包都不再弹 */
+function maybeGuide(){if(S.prefs.guided)return;let n=0;const t=setInterval(()=>{n++;if(S.prefs.guided){clearInterval(t);return}
 const from=S.prefs.guideStep||0;
 const ready=(!IN_APP||window.__XM_SPLASH_DONE)&&!needConsent()&&!LOCKED&&!document.querySelector('.lk,.pc,.sheet.show,.jr.show,.fn,.gd,#dName')&&tab==='today'&&document.querySelector('#pane');
-if(ready){clearInterval(t);setTimeout(()=>{if(!document.querySelector('.gd')){GUIDE_SHOWN_THIS_LAUNCH=true;startGuide(testEvery,testEvery?0:from)}},dur(500))}else if(n>1200)clearInterval(t)},500)}
+if(ready){clearInterval(t);setTimeout(()=>{if(!document.querySelector('.gd'))startGuide(false,from)},dur(500))}else if(n>1200)clearInterval(t)},500)}
+/* 新功能确实需要讲解时才特别安排：newsOnce('功能id',()=>{...})，老用户只看一次；新用户已有新手引导，直接记为看过 */
+function newsOnce(id,fn){const k=S.prefs.news||(S.prefs.news={});if(k[id])return;const old=!!S.prefs.guided;k[id]=1;save();if(old)fn()}
 function lockOnStart(){showLock()}
 let HIDDEN_AT=0;
 /* 离开 App 时先盖一层空白锁屏，回来时直接是锁住的样子，不会先闪一下 App 里的内容 */
@@ -13543,6 +13543,10 @@ const pipWhen=it=>{const d=new Date(it.at),hm=d.getSeconds()?hms(d):hms(d).slice
 /* 原生画悬浮窗要的全部内容：颜色、下一场（已换算到手机时钟并含补偿）、几句文字 */
 const pipMsg=()=>{const p=pipP(),c=PIP_PALS.find(x=>x.id===p.palette)||PIP_PALS[0],t=pipItem(),one=x=>({at:phoneAt(x,true),name:x.name,when:pipWhen(x),plat:T(platName(x.src)),label:`${hms(new Date(x.at))} ${T('开抢')} · ${x.name}`});
 return {...p,bg:c.bg,fg:c.fg,msColor:p.msSame?c.fg:c.ms,al:c.al,sub:c.sub,pill:c.pill,line:c.line,target:t?phoneAt(t,true):0,targets:upcoming().filter(x=>atOf(x)>Date.now()-60e3&&(!t||x.at>=t.at)).sort((a,b)=>(a===t?-1:b===t?1:a.at-b.at)).slice(0,20).map(one),targetLabel:t?one(t).label:'',targetName:t?t.name:'',targetWhen:t?pipWhen(t):'',targetPlat:t?T(platName(t.src)):'',cdLabel:T('倒计时'),nowLabel:T('当前时间'),whenLabel:T('开抢时间'),firedLabel:T('已开抢'),secUnit:T('秒'),leadLabel:''}};
+/* 删除一场：悬浮窗正在显示这一场就一起关掉；显示的是别的场次，只把列表里的这一场去掉 */
+function delItem(id){const showing=PIP_ON&&(()=>{const t=pipItem();return t&&t.id===id})();
+S.items=items().filter(x=>x.id!==id);if(PIP_ID===id)PIP_ID=null;save();
+if(showing){PIP_ON=false;PIP_LOST=false;if(IN_APP)NN({cmd:'pip',on:false,...timeMsg(),...pipMsg()}).catch(()=>{});else removeFloat()}else pushPip()}
 function pushPip(){if(IN_APP&&PIP_ON)NN({cmd:'pipconfig',...pipMsg()}).catch(()=>{})}
 function floatStyle(el){const p=pipP(),c=PIP_PALS.find(x=>x.id===p.palette)||PIP_PALS[0];
 el.classList.remove('s-std','s-slim','s-thin');el.classList.add('s-'+p.shape);
@@ -13591,7 +13595,7 @@ $('#kdAdd').onclick=()=>openItemEditor(null);
 $('#kdEmpty')&&($('#kdEmpty').onclick=()=>openItemEditor(null));
 $('#kdOldT')&&($('#kdOldT').onclick=()=>{SHOW_ENDED=!SHOW_ENDED;buzz();renderDay()});
 $$('#pane [data-it]').forEach(el=>el.onclick=()=>openItemEditor(el.dataset.it));
-$$('#pane .sw-row[data-sw]').forEach(r=>swipeDel(r,()=>{const id=r.dataset.sw;S.items=items().filter(x=>x.id!==id);save();renderDay();toast('已删除')}));
+$$('#pane .sw-row[data-sw]').forEach(r=>swipeDel(r,()=>{delItem(r.dataset.sw);renderDay();toast('已删除')}));
 $$('#pane [data-adj]').forEach(b=>b.onclick=e=>{e.stopPropagation();const it=items().find(x=>x.id===b.dataset.adj);if(!it)return;it.adj=(+it.adj||0)+(+b.dataset.d);buzz();save();renderDay();pushPip()});
 $$('#pane [data-pip]').forEach(b=>b.onclick=e=>{e.stopPropagation();togglePip(b.dataset.pip)});
 $$('#pane [data-open]').forEach(b=>b.onclick=e=>{e.stopPropagation();openLink(b.dataset.open)});
@@ -13978,7 +13982,7 @@ $('#ieLive',sh)&&($('#ieLive',sh).onclick=()=>{c.live=!c.live;buzz();redraw()});
 $('#ieAuto',sh)&&($('#ieAuto',sh).onclick=()=>{if(!c.auto&&!c.link){toast('先填抢购链接，才能自动打开','gray');return}c.auto=!c.auto;buzz();redraw()});
 $('#ieAutoAt',sh)&&($('#ieAutoAt',sh).onchange=e=>{c.autoLead=+e.target.value;redraw()});
 $('#ieCopy',sh)&&($('#ieCopy',sh).onclick=()=>{const src=JSON.parse(JSON.stringify(c));buzz();close();setTimeout(()=>{openItemEditor(null,src);toast('已复制，改一下时间再保存')},dur(300))});
-$('#ieDel',sh)&&($('#ieDel',sh).onclick=()=>plainConfirm('删除这场抢购？','删除后提醒也会取消。','删除',()=>{S.items=items().filter(x=>x.id!==c.id);save();close();render();toast('已删除')}));
+$('#ieDel',sh)&&($('#ieDel',sh).onclick=()=>plainConfirm('删除这场抢购？','删除后提醒也会取消。','删除',()=>{delItem(c.id);close();render();toast('已删除')}));
 $('#ieOk',sh).onclick=trySave;
 };
 /* 只改有变化的地方，不换掉手指正按着的元素：输完链接直接点别处，第一下也算数，输入框也不丢焦点 */
