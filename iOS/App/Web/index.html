@@ -13514,7 +13514,8 @@ function fmtCd(ms){if(ms<=0)return '00:00:00';const d=Math.floor(ms/864e5);let r
 const h=Math.floor(r/36e5);r-=h*36e5;const m=Math.floor(r/6e4);r-=m*6e4;const s=Math.floor(r/1e3);
 /* 毫秒位跟悬浮窗设置走，全局有效 */
 const dg=S&&S.prefs?pipP().msDigits:1;
-return d>0?`${d} 天 ${pad(h)}:${pad(m)}:${pad(s)}`:`${pad(h)}:${pad(m)}:${pad(s)}${msPart(r,dg)}`}
+/* 超过 1 天也显示秒后面的位数（老板 2026-11-03） */
+return d>0?`${d} 天 ${pad(h)}:${pad(m)}:${pad(s)}${msPart(r,dg)}`:`${pad(h)}:${pad(m)}:${pad(s)}${msPart(r,dg)}`}
 const autoLeadOf=it=>[10,30,60].includes(+it.autoLead)?+it.autoLead:30;
 const firedText=ms=>`已开抢 +${(-ms/1000).toFixed(1)} 秒`;
 const items=()=>(S.items||[]);
