@@ -11832,10 +11832,29 @@ return {al,close};
 }
 function plainConfirm(title,msg,okText,onOk){
 const {al,close}=openAlert(`<h3>${title}</h3><p>${msg}</p>
-<button class="al-btn pri" id="pcOk">${okText}</button><button class="al-btn sec" id="pcNo">取消</button>`,'neutral');
+<button class="al-btn pri" id="pcOk">${okText}</button><button class="al-btn sec" id="pcNo">取消</button>`,'neutral cf');
 $('#pcOk',al).onclick=()=>{close();setTimeout(onOk,dur(200))};
 $('#pcNo',al).onclick=close;
 }
+/* 左滑删除（通用）：<div class="sw-row"><button class="sw-del">删除</button><div|button class="sw-fg">…</div></div>
+   左滑超过一半停在打开，点「删除」直接删（不再弹确认）；点别处或再点一下前景就收回；上下滑照常滚动 */
+function swipeDel(row,onDel){
+const fg=row.querySelector('.sw-fg'),del=row.querySelector('.sw-del'),W=80;if(!fg||!del)return;
+let x0=0,y0=0,dx=0,base=0,drag=false,lock=null,moved=false;
+const set=(x,anim)=>{fg.style.transition=anim?'transform .22s cubic-bezier(.2,.8,.2,1)':'none';fg.style.transform=x?`translateX(${x}px)`:'';row.classList.toggle('open',x<0);del.style.opacity=x<0?Math.min(1,-x/W):0;del.style.pointerEvents=x<=-W/2?'auto':'none'};
+row.__swClose=()=>set(0,true);
+fg.addEventListener('pointerdown',e=>{x0=e.clientX;y0=e.clientY;dx=0;drag=true;lock=null;moved=false;base=row.classList.contains('open')?-W:0;
+document.querySelectorAll('.sw-row.open').forEach(r=>{if(r!==row&&r.__swClose)r.__swClose()})});
+fg.addEventListener('pointermove',e=>{if(!drag)return;const mx=e.clientX-x0,my=e.clientY-y0;
+if(lock===null&&(Math.abs(mx)>6||Math.abs(my)>6)){lock=Math.abs(mx)>Math.abs(my)?'x':'y';if(lock==='x'){try{fg.setPointerCapture(e.pointerId)}catch(_){}}}
+if(lock!=='x')return;moved=true;dx=Math.max(-W-24,Math.min(0,base+mx));set(dx,false)});
+const end=()=>{if(!drag)return;drag=false;if(lock==='x')set(dx<-W/2?-W:0,true)};
+fg.addEventListener('pointerup',end);fg.addEventListener('pointercancel',end);
+fg.addEventListener('click',e=>{if(moved||row.classList.contains('open')){e.stopImmediatePropagation();e.preventDefault();if(!moved)set(0,true)}},true);
+del.addEventListener('click',e=>{e.stopPropagation();buzz();const h=row.offsetHeight;row.style.height=h+'px';row.style.overflow='hidden';
+requestAnimationFrame(()=>{row.style.transition='height .22s ease,opacity .2s ease,margin .22s ease';row.style.height='0px';row.style.opacity='0';row.style.marginTop='0px';row.style.marginBottom='0px'});
+setTimeout(onDel,dur(230))})}
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.sw-row'))document.querySelectorAll('.sw-row.open').forEach(r=>r.__swClose&&r.__swClose())},true);
 /* delete a card for good: it disappears from every date, together with its check-ins and logs */
 /* ================= sheet ================= */
 let SHEET_N=0;
@@ -13563,7 +13582,7 @@ $('#pane').innerHTML=`
 ${IN_APP?'':'<p class="kd-demo">网页预览：时间偏差是模拟数据，装进 App 后会真实对时。<button id="kdPv">预览开关</button></p>'}
 <div class="tray-head kd-head"><h2>抢购日程</h2><button class="kd-pset2" id="kdPset">悬浮窗设置<i>›</i></button><button class="th-flat th-add" id="kdAdd" aria-label="添加抢购">${ADD_DOODLE}</button></div>
 ${up.length?up.map(nextHTML).join(''):`<button class="kd-empty" id="kdEmpty"><b>添加第一场抢购</b><span>粘贴抢购链接，填好开抢时间，到点前提醒你。</span></button>`}
-${old.length?`<button class="kd-old-t" id="kdOldT">已结束 ${old.length} 场<span>${SHOW_ENDED?'收起':'展开'}</span></button>${SHOW_ENDED?`<div class="kd-list kd-old">${old.map(itemHTML).join('')}</div>`:''}`:''}
+${old.length?`<button class="kd-old-t" id="kdOldT">已结束 ${old.length} 场<span>${SHOW_ENDED?'收起':'展开'}</span></button>${SHOW_ENDED?`<div class="kd-list kd-old">${old.map(it=>`<div class="sw-row" data-sw="${it.id}"><button class="sw-del" aria-label="删除">删除</button>${itemHTML(it).replace('class="kd-it','class="sw-fg kd-it')}</div>`).join('')}</div>`:''}`:''}
 <div style="height:110px"></div>`;
 tick(true);syncAll();
 $('#kdPv')&&($('#kdPv').onclick=openPreviewPanel);
@@ -13572,6 +13591,7 @@ $('#kdAdd').onclick=()=>openItemEditor(null);
 $('#kdEmpty')&&($('#kdEmpty').onclick=()=>openItemEditor(null));
 $('#kdOldT')&&($('#kdOldT').onclick=()=>{SHOW_ENDED=!SHOW_ENDED;buzz();renderDay()});
 $$('#pane [data-it]').forEach(el=>el.onclick=()=>openItemEditor(el.dataset.it));
+$$('#pane .sw-row[data-sw]').forEach(r=>swipeDel(r,()=>{const id=r.dataset.sw;S.items=items().filter(x=>x.id!==id);save();renderDay();toast('已删除')}));
 $$('#pane [data-adj]').forEach(b=>b.onclick=e=>{e.stopPropagation();const it=items().find(x=>x.id===b.dataset.adj);if(!it)return;it.adj=(+it.adj||0)+(+b.dataset.d);buzz();save();renderDay();pushPip()});
 $$('#pane [data-pip]').forEach(b=>b.onclick=e=>{e.stopPropagation();togglePip(b.dataset.pip)});
 $$('#pane [data-open]').forEach(b=>b.onclick=e=>{e.stopPropagation();openLink(b.dataset.open)});
@@ -14534,6 +14554,35 @@ html.sh-lock .kd-float:not(.kd-fpv):not(.kd-fx){visibility:hidden}
 .kd-dr-res em{margin-top:6px;padding:4px 14px;border-radius:14px;background:#FFF0C2;color:#7A5A00;font-style:normal;font-weight:700}
 .kd-dr-res p{margin:18px 10px 0;font-size:14px;line-height:1.7;color:var(--kd-ink2)}
 .kd-dr-res .kd-dr-best{margin-top:10px;font-weight:600;color:var(--kd-ink)}
+/* 确认对话框（plainConfirm）：主按钮浅灰底、深灰字，取消是灰字；不用主题色；去掉上边缘的白色高光线 */
+.alert.cf{background:#FFFFFF!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 0 0 .5px rgba(60,60,67,.12),0 28px 60px -20px rgba(0,0,0,.35)!important}
+.alert.cf .al-btn.pri{background:#ECECEF!important;color:#3A3A3C!important}
+.alert.cf .al-btn.sec{background:none!important;color:#8E8E93!important}
+body.dark .alert.cf{background:#2C2C2E!important;box-shadow:0 0 0 .5px rgba(255,255,255,.06),0 28px 60px -20px rgba(0,0,0,.8)!important}
+body.dark .alert.cf h3{color:#F2F2F7}body.dark .alert.cf p{color:#AEAEB2}
+body.dark .alert.cf .al-btn.pri{background:#48484A!important;color:#FFFFFF!important}
+body.dark .alert.cf .al-btn.sec{color:#8E8E93!important}
+/* 左滑删除（swipeDel） */
+.sw-row{position:relative;border-radius:20px}
+.sw-row .sw-fg{position:relative;z-index:1;touch-action:pan-y;will-change:transform}
+.sw-del{position:absolute;right:0;top:0;bottom:0;width:80px;border-radius:20px;background:#E5534B;color:#fff;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}
+body.dark .sw-del{background:#D9473F}
+/* 倒计时卡片：上下间距缩成原来的 3/4，字号同步缩小 */
+.kd-next{margin-top:10.5px;padding:12px 16px 10.5px}
+.kd-plat{font-size:12px}
+.kd-nn{margin-top:6px;font-size:16px}
+.kd-ncd{margin-top:3px;font-size:31px;line-height:1.15}
+.kd-nt{margin-top:1.5px;font-size:12px}
+.kd-nadj{margin-top:7.5px;font-size:13px}
+.kd-nadj small{font-size:11px;margin-top:1.5px}
+.kd-next .kd-adj button{width:30px;height:30px;border-radius:15px}
+.kd-next .kd-adj b{font-size:13px;min-width:52px}
+.kd-nb{margin-top:9px}
+.kd-nb button{height:34px;border-radius:17px;font-size:13px}
+.kd-nw{margin-top:4.5px;font-size:12px}
+/* 已结束：左滑时红色删除按钮不能透出来，变淡的只是内容 */
+.sw-row .kd-it.past{opacity:1}
+.sw-row .kd-it.past>*{opacity:.55}
 </style>
 </body>
 </html>
