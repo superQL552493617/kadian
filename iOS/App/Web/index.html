@@ -13956,12 +13956,14 @@ offAuto();
 if(!url)return;
 const hadText=(tt||nameTouched)&&(at||timeTouched);if(hadText||!url){offerResult(tt,at,'从分享文字');return}
 const kept=note,keptW=noteWarn;note='正在读取标题和开抢时间…';noteWarn=false;
-fetchLinkInfo(url).then(r=>{if(my!==seq||!sh.isConnected)return;note=kept;noteWarn=keptW;
+/* 识别期间盖一层提示，挡住其他点击（老板 2026-11-04） */
+const wait=openAlert(`<div class="up-spin"><i></i></div><h3>正在识别，请稍候…</h3><p>正在读取标题和开抢时间，一般几秒钟</p>`,'neutral cf');
+fetchLinkInfo(url).then(r=>{wait.close();if(my!==seq||!sh.isConnected)return;note=kept;noteWarn=keptW;
 const atV=at||(typeof r.at==='number'?r.at:null),how=at?'从分享文字':'从链接',many=!at&&!timeTouched&&r.cands&&r.cands.length>1;linkMiss=atV==null&&!many;
 if(many){redraw();offerChoice(tt||r.title,r.cands);return}
 if(r.blocked&&!at&&!note){note='平台要求验证，读不到这个页面，请手动填写。';noteWarn=true}
 else if(atV==null&&!timeTouched&&!note){note='这个链接读不到开抢时间，请按平台公布的时间填写。';noteWarn=true}
-redraw();offerResult(tt||r.title,atV,how)}).catch(e=>{if(my!==seq||!sh.isConnected)return;
+redraw();offerResult(tt||r.title,atV,how)}).catch(e=>{wait.close();if(my!==seq||!sh.isConnected)return;
 note=kept;noteWarn=keptW;linkMiss=!at;if(!at&&!timeTouched){note=e&&e.message==='preview'?'网页预览读不了平台页面，装进 App 后会自动读取。现在可以手动填，或粘贴带开抢时间的分享文字。':'没读到标题和开抢时间，请手动填写。';noteWarn=true}redraw();offerResult(tt,at,'从分享文字')})};
 /* 链接框失焦时手指可能还按着别的按钮。这时新提示会把按钮往下挤，这一下就点空了，所以等手指抬起再更新 */
 let hold=false,pend=false,down=false;
