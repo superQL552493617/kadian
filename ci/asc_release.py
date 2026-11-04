@@ -117,6 +117,14 @@ def status():
 if MODE == "status":
     status()
 
+if MODE == "builds":
+    # 只读：最近上传的安装包和苹果的处理状态（PROCESSING 处理中 / VALID 可以用 / INVALID 被退回）
+    aid = app_id()
+    bl, _ = all_pages("/v1/builds", {"filter[app]": aid, "sort": "-uploadedDate", "limit": 6})
+    for b in bl[:6]:
+        a = b["attributes"]
+        print("build", a.get("version"), a.get("processingState"), "上传于", a.get("uploadedDate"), "过期" if a.get("expired") else "")
+
 PAGES = APP["pagesBase"]
 # 简体中文的商店资料：ci/appstore/locales/zh-Hans.json（其他语言同目录，用 locales 模式提交）
 def loadloc(f):
