@@ -22,7 +22,7 @@
     "enabled": true,
     "groupName": "会员",
     "groupNameEn": "Premium",
-    "reviewNote": "会员权益：全程无广告、全部悬浮窗样式（配色和形状）、不限场次。免费用户可用对时、倒计时、悬浮窗、灵动岛和提醒。",
+    "reviewNote": "会员权益：全程无广告、不限场次。免费用户可用对时、倒计时、悬浮窗（全部配色和形状）、灵动岛和提醒，最多同时 3 场。",
     "year": {
       "id": "site.xiaomanhabit.kadian.vip.year",
       "cny": "18",
