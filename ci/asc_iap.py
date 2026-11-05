@@ -329,6 +329,23 @@ def main():
             api("PATCH", f"/v2/inAppPurchases/{i['id']}", {"data": {"type": "inAppPurchases", "id": i["id"], "attributes": {"reviewNote": REVIEW_NOTE}}})
             upload_shot(i["attributes"]["productId"], "inAppPurchases", i["id"])
         time.sleep(15)
+    if MODE == "diag":
+        # 只读：查商品为什么还是 MISSING_METADATA
+        groups, inc = all_pages(f"/v1/apps/{app}/subscriptionGroups", {"include": "subscriptions", "limit": 50})
+        for x in inc:
+            if x["type"] != "subscriptions":
+                continue
+            sid = x["id"]; print("SUB", x["attributes"]["productId"], {k: x["attributes"].get(k) for k in ("state", "reviewNote", "familySharable", "groupLevel")})
+            j = api("GET", f"/v1/subscriptions/{sid}/appStoreReviewScreenshot", ok=(200, 404)); print(" shot", j and j.get("data") and j["data"]["attributes"].get("assetDeliveryState"))
+            j = api("GET", f"/v1/subscriptions/{sid}/subscriptionAvailability", ok=(200, 404)); print(" availability", j and j.get("data") and j["data"]["attributes"])
+            ls, _ = all_pages(f"/v1/subscriptions/{sid}/subscriptionLocalizations"); print(" locs", [(l["attributes"]["locale"], l["attributes"].get("state")) for l in ls])
+        iaps, _ = all_pages(f"/v1/apps/{app}/inAppPurchasesV2", {"limit": 200})
+        for i in iaps:
+            iid = i["id"]; print("IAP", i["attributes"]["productId"], {k: i["attributes"].get(k) for k in ("state", "reviewNote", "familySharable")})
+            j = api("GET", f"/v2/inAppPurchases/{iid}/appStoreReviewScreenshot", ok=(200, 404)); print(" shot", j and j.get("data") and j["data"]["attributes"].get("assetDeliveryState"))
+            j = api("GET", f"/v2/inAppPurchases/{iid}/inAppPurchaseAvailability", ok=(200, 404)); print(" availability", j and j.get("data") and j["data"]["attributes"])
+            j = api("GET", f"/v2/inAppPurchases/{iid}/iapPriceSchedule", ok=(200, 404)); print(" priceSchedule", j and j.get("data") and j["data"]["id"])
+            ls, _ = all_pages(f"/v2/inAppPurchases/{iid}/inAppPurchaseLocalizations"); print(" locs", [(l["attributes"]["locale"], l["attributes"].get("state")) for l in ls])
     if MODE == "setup":
         terrs = territories()
         print("地区数：", len(terrs))
