@@ -102,8 +102,6 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         UIRequiresFullScreen: true
-        UIFileSharingEnabled: true
-        LSSupportsOpeningDocumentsInPlace: true
         CFBundleURLTypes:
           - CFBundleURLName: {C['bundleId']}
             CFBundleURLSchemes: [{C['urlScheme']}]
@@ -112,7 +110,6 @@ targets:
         UIBackgroundModes:
           - audio
         NSSupportsLiveActivities: true
-        NSFaceIDUsageDescription: {perm.get('faceId', '')}
         NSPhotoLibraryUsageDescription: {perm.get('photos', '')}
         NSCameraUsageDescription: {perm.get('camera', '')}
         NSCalendarsFullAccessUsageDescription: {perm.get('calendars', '')}
@@ -170,9 +167,9 @@ targets:
 # ---------- InfoPlist.strings ----------
 def ip(lang, d):
     return ''.join(f'"{k}" = "{sw(v)}";\n' for k, v in d.items())
-w('iOS/App/Localized/zh-Hans.lproj/InfoPlist.strings', ip('zh-Hans', {"CFBundleDisplayName": name, "NSCalendarsFullAccessUsageDescription": perm.get('calendars', ''), "NSFaceIDUsageDescription": perm.get('faceId', ''), "NSPhotoLibraryUsageDescription": perm.get('photos', ''), "NSCameraUsageDescription": perm.get('camera', '')}))
-w('iOS/App/Localized/zh-Hant.lproj/InfoPlist.strings', ip('zh-Hant', {"CFBundleDisplayName": nameHant, "NSCalendarsFullAccessUsageDescription": hant(perm.get('calendars', '')), "NSFaceIDUsageDescription": hant(perm.get('faceId', '')), "NSPhotoLibraryUsageDescription": hant(perm.get('photos', '')), "NSCameraUsageDescription": hant(perm.get('camera', ''))}))
-w('iOS/App/Localized/en.lproj/InfoPlist.strings', ip('en', {"CFBundleDisplayName": nameEn, "NSCalendarsFullAccessUsageDescription": perm.get('calendarsEn', ''), "NSFaceIDUsageDescription": perm.get('faceIdEn', ''), "NSPhotoLibraryUsageDescription": perm.get('photosEn', ''), "NSCameraUsageDescription": perm.get('cameraEn', '')}))
+w('iOS/App/Localized/zh-Hans.lproj/InfoPlist.strings', ip('zh-Hans', {"CFBundleDisplayName": name, "NSCalendarsFullAccessUsageDescription": perm.get('calendars', ''), "NSPhotoLibraryUsageDescription": perm.get('photos', ''), "NSCameraUsageDescription": perm.get('camera', '')}))
+w('iOS/App/Localized/zh-Hant.lproj/InfoPlist.strings', ip('zh-Hant', {"CFBundleDisplayName": nameHant, "NSCalendarsFullAccessUsageDescription": hant(perm.get('calendars', '')), "NSPhotoLibraryUsageDescription": hant(perm.get('photos', '')), "NSCameraUsageDescription": hant(perm.get('camera', ''))}))
+w('iOS/App/Localized/en.lproj/InfoPlist.strings', ip('en', {"CFBundleDisplayName": nameEn, "NSCalendarsFullAccessUsageDescription": perm.get('calendarsEn', ''), "NSPhotoLibraryUsageDescription": perm.get('photosEn', ''), "NSCameraUsageDescription": perm.get('cameraEn', '')}))
 for lang, n in (('zh-Hans', name), ('zh-Hant', nameHant), ('en', nameEn)):
     w(f'iOS/Widget/Localized/{lang}.lproj/InfoPlist.strings', ip(lang, {"CFBundleDisplayName": n}))
 
@@ -235,8 +232,8 @@ def page(lang, prefix, title, inner, fname):
     return f'<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)}</title>\n{CSS}</head><body><main>\n<p class="lang">{sw_}</p>\n{inner}\n{foot}</main></body></html>'
 fb = C.get('feedbackForm') or ''
 sup = {
- 'zh-CN': f'<h1>{name} · 帮助与支持</h1>\n<p>{html.escape(C.get("subtitle", ""))}</p>\n<h2>常见问题</h2>\n<p><b>数据保存在哪里？</b><br>全部保存在你的手机上，我们没有服务器。可以在 App 里导出备份。</p>\n<p><b>要付费吗？</b><br>全部功能免费，没有广告。</p>\n<p><b>为什么和抢购页面上的倒计时不一样？</b><br>抢购页面的倒计时是手机自己算的，可能差 1 秒左右。卡点对齐平台的服务器时间，选对平台后看卡点的时间就行。对不上时界面会写明，这时显示的是手机时间。</p>\n<p><b>会替我抢吗？</b><br>不会。卡点只帮你看准时间，下单要你自己点。</p>\n<h2>联系我们</h2>\n<p>在 App 里点「意见反馈」' + (f'，或直接打开 <a href="{fb}">反馈问卷</a>' if fb else '') + '，我们会尽快回复。</p>',
- 'en': f'<h1>{nameEn} · Help &amp; Support</h1>\n<h2>FAQ</h2>\n<p><b>Where is my data stored?</b><br>Everything stays on your phone; we have no servers. You can export a backup in the app.</p>\n<p><b>Does it cost anything?</b><br>All features are free, with no ads.</p>\n<p><b>Why does it differ from the countdown on the sale page?</b><br>The sale page’s countdown is calculated by your phone and can be off by about a second. {nameEn} syncs with the platform’s server, so once you pick the right platform, go by {nameEn}. If it can’t sync, the screen says so and shows your phone’s time.</p>\n<p><b>Will it buy for me?</b><br>No. {nameEn} only helps you time it; you place the order yourself.</p>\n<h2>Contact us</h2>\n<p>Tap “Feedback” in the app' + (f', or open the <a href="{fb}">feedback form</a>' if fb else '') + '. We’ll get back to you soon.</p>',
+ 'zh-CN': f'<h1>{name} · 帮助与支持</h1>\n<p>{html.escape(C.get("subtitle", ""))}</p>\n<h2>常见问题</h2>\n<p><b>数据保存在哪里？</b><br>抢购日程和设置都只保存在你的手机上，我们没有服务器。删除 App 时这些数据会一起删除。</p>\n<p><b>要付费吗？</b><br>基础功能免费，最多同时 3 场。会员权益是全程无广告、不限场次：永久会员 18 元，季度会员 8 元（每 3 个月自动续订，可随时在系统设置里取消）。价格以购买页显示为准。</p>\n<p><b>换手机后会员还在吗？</b><br>会员跟你的 Apple 账号走。在新手机上打开会员页，点「恢复购买」就行。</p>\n<p><b>为什么和抢购页面上的倒计时不一样？</b><br>抢购页面的倒计时可能是手机自己算的，可能差 1 秒左右。{name}的每一场都按所选平台的服务器时间对时。对不上时卡片上会写明，这时倒计时按手机时间算。</p>\n<p><b>会替我抢吗？</b><br>不会。{name}只帮你看准时间，下单要你自己点。</p>\n<h2>联系我们</h2>\n<p>在 App 里点「意见反馈」' + (f'，或直接打开 <a href="{fb}">反馈问卷</a>' if fb else '') + '，我们会尽快回复。</p>',
+ 'en': f'<h1>{nameEn} · Help &amp; Support</h1>\n<h2>FAQ</h2>\n<p><b>Where is my data stored?</b><br>Your sales and settings stay only on your phone; we have no servers. They are deleted when you delete the app.</p>\n<p><b>Does it cost anything?</b><br>Basic features are free, with up to 3 sales at a time. Membership gives you no ads and unlimited sales: Lifetime is ¥18; Quarterly is ¥8 and renews every 3 months until you cancel it in system Settings. The purchase page shows the actual price.</p>\n<p><b>Will my membership move to a new phone?</b><br>Membership follows your Apple Account. Open the membership page on the new phone and tap Restore Purchases.</p>\n<p><b>Why does it differ from the countdown on the sale page?</b><br>A sale page’s countdown may be calculated by your phone and can be off by about a second. {nameEn} syncs each sale with its platform’s server time. If it can’t sync, the card says so and the countdown uses your phone’s time.</p>\n<p><b>Will it buy for me?</b><br>No. {nameEn} only helps you time it; you place the order yourself.</p>\n<h2>Contact us</h2>\n<p>Tap “Feedback” in the app' + (f', or open the <a href="{fb}">feedback form</a>' if fb else '') + '. We’ll get back to you soon.</p>',
 }
 sup['zh-Hant'] = hant(sup['zh-CN'])
 S = f"site/{C['slug']}/"

@@ -45,15 +45,27 @@ enum UserID {
     }
 }
 
-/// 测试包（Xcode 调试、TestFlight）：默认当作会员，方便测会员功能；摇一摇可以关掉，用来测购买流程
+/// 测试工具（读链接测试、诊断行、摇一摇菜单）。
+/// 审核环境也是沙盒票据，分不出来，所以沙盒里默认也关着，和正式版看到的一样：
+/// 测试的人在「我的」连点版本号 10 次打开（只对这台手机）。App Store 下载的正式版打不开。
+/// 这样老板测过的 TestFlight 包可以直接提交，不用重新打包。
 enum TestMode {
-    static var isTestBuild: Bool {
+    private static var isSandbox: Bool {
         #if DEBUG
         return true
         #else
         return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
         #endif
     }
+    private static let unlockKey = "testToolsUnlocked"
+    static var isTestBuild: Bool { isSandbox && UserDefaults.standard.bool(forKey: unlockKey) }
+    /// 打开测试工具；正式版返回 false
+    static func unlock() -> Bool {
+        guard isSandbox else { return false }
+        UserDefaults.standard.set(true, forKey: unlockKey)
+        return true
+    }
+    static func lock() { UserDefaults.standard.set(false, forKey: unlockKey) }
     static let vipKey = "testVIP"
     static var vip: Bool {
         guard isTestBuild else { return false }
@@ -188,8 +200,9 @@ struct WebRootView: View {
                 }
                 Button("复制测试记录") { UIPasteboard.general.string = Diag.text }
                 Button("读链接测试") { UIApplication.topViewController()?.present(UIHostingController(rootView: LinkTestView()), animated: true) }
+                Button("关闭测试工具（重开 App 生效）") { TestMode.lock() }
                 Button("取消", role: .cancel) {}
-            } message: { Text("这个菜单只在测试包里出现。") }
+            } message: { Text("这个菜单只在打开测试工具后出现。") }
     }
 }
 
@@ -378,6 +391,8 @@ final class WebBridge: NSObject, ObservableObject, WKScriptMessageHandlerWithRep
             CalendarRead.upcoming { replyHandler($0, nil) }
         case "openapp":
             AppLink.open(body["url"] as? String ?? "") { replyHandler($0, nil) }
+        case "devunlock":
+            replyHandler(TestMode.unlock(), nil)
         case "linktest":
             guard let top = UIApplication.topViewController(), TestMode.isTestBuild else { replyHandler(false, nil); return }
             top.present(UIHostingController(rootView: LinkTestView()), animated: true)

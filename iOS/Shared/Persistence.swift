@@ -21,20 +21,6 @@ enum Persistence {
     static func saveRaw(_ v: String) {
         guard let d = v.data(using: .utf8) else { return }
         try? d.write(to: file, options: [.atomic])
-        dailySnapshot(d)
-    }
-
-    /// 每天留一份快照到「文件」App 能看到的文稿目录（自动备份），保留最近 7 份
-    static func dailySnapshot(_ d: Data) {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Backups", isDirectory: true)
-        try? FileManager.default.createDirectory(at: docs, withIntermediateDirectories: true)
-        let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"; f.locale = Locale(identifier: "en_US_POSIX")
-        let url = docs.appendingPathComponent("\(AppConfig.slug)-\(f.string(from: Date())).json")
-        if FileManager.default.fileExists(atPath: url.path) { return }
-        try? d.write(to: url, options: [.atomic])
-        let all = ((try? FileManager.default.contentsOfDirectory(at: docs, includingPropertiesForKeys: nil)) ?? [])
-            .filter { $0.pathExtension == "json" }.sorted { $0.lastPathComponent > $1.lastPathComponent }
-        for old in all.dropFirst(7) { try? FileManager.default.removeItem(at: old) }
     }
 
     // MARK: 小组件

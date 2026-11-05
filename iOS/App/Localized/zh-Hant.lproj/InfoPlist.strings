@@ -1,5 +1,4 @@
 "CFBundleDisplayName" = "準點時鐘";
 "NSCalendarsFullAccessUsageDescription" = "讀取你選擇的日程時間，填到搶購活動裡；只在手機上讀取，不上傳";
-"NSFaceIDUsageDescription" = "用Face ID 解鎖，保護你的記錄";
-"NSPhotoLibraryUsageDescription" = "識別相簿裡的二維碼；也可選擇照片作為頭像或圖示";
-"NSCameraUsageDescription" = "掃描二維碼新增搶購活動；也可拍照作為頭像或圖示";
+"NSPhotoLibraryUsageDescription" = "識別相簿裡的二維碼；也可選擇照片作為頭像";
+"NSCameraUsageDescription" = "掃描二維碼新增搶購活動；也可拍照作為頭像";
