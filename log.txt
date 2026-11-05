@@ -1,0 +1,80 @@
+2026-11-05 09:56:25.568 Df App[20959:ed46] [com.apple.network:connection] nw_endpoint_resolver_update [C10.1 Hostname#a8bc4344:123 in_progress resolver (satisfied (Path is satisfied), interface: en0)] Adding endpoint handler for IPv4#4d65eef7:123
+2026-11-05 09:56:25.568 Df App[20959:ed46] [com.apple.network:connection] [C10.1 Hostname#a8bc4344:123 in_progress resolver (satisfied (Path is satisfied), interface: en0)] event: resolver:receive_dns @0.004s
+2026-11-05 09:56:25.568 Df App[20959:ed46] [com.apple.network:connection] [C10.1.1 IPv4#f08afb91:123 initial path ((null))] event: path:start @0.004s
+2026-11-05 09:56:25.568 Df App[20959:ed46] [com.apple.network:connection] [C10.1.1 IPv4#f08afb91:123 waiting path (satisfied (Path is satisfied), interface: en0)] event: path:satisfied @0.004s, uuid: 56A5C1AF-DA5C-4DFF-8BC2-D22DBE567CE8
+2026-11-05 09:56:25.569 Df App[20959:ed46] [com.apple.network:connection] [C10.1.1 IPv4#f08afb91:123 in_progress socket-flow (satisfied (Path is satisfied), interface: en0)] event: flow:start_connect @0.005s
+2026-11-05 09:56:25.569 Df App[20959:ed46] [com.apple.network:connection] nw_flow_connected [C10.1.1 IPv4#f08afb91:123 in_progress socket-flow (satisfied (Path is satisfied), interface: en0)] Output protocol connected (socket)
+2026-11-05 09:56:25.569 Df App[20959:ed46] [com.apple.network:connection] [C10.1.1 IPv4#f08afb91:123 ready socket-flow (satisfied (Path is satisfied), interface: en0)] event: flow:child_finish_connect @0.005s
+2026-11-05 09:56:25.569 Df App[20959:ed46] [com.apple.network:connection] [C10.1 Hostname#a8bc4344:123 ready resolver (satisfied (Path is satisfied), interface: en0)] event: flow:child_finish_connect @0.005s
+2026-11-05 09:56:25.569 Df App[20959:ed46] [com.apple.network:connection] nw_flow_connected [C10 IPv4#f08afb91:123 in_progress parent-flow (satisfied (Path is satisfied), interface: en0)] Output protocol connected (endpoint_flow)
+2026-11-05 09:56:25.569 Df App[20959:ed46] [com.apple.network:connection] [C10 IPv4#f08afb91:123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] event: flow:finish_connect @0.005s
+2026-11-05 09:56:25.569 Df App[20959:ed46] [com.apple.network:connection] nw_connection_report_state_with_handler_on_nw_queue [C10] reporting state ready
+2026-11-05 09:56:25.570 Df App[20959:ed46] [com.apple.network:connection] nw_socket_handle_socket_event [C10.1.1:1] Socket received CONNECTED event
+2026-11-05 09:56:25.570 Df App[20959:ed46] [com.apple.network:connection] nw_flow_connected [C10.1.1 IPv4#f08afb91:123 ready socket-flow (satisfied (Path is satisfied), interface: en0)] Output protocol connected (socket)
+2026-11-05 09:56:25.570 Df App[20959:ed46] [com.apple.network:connection] nw_flow_connected [C10 IPv4#f08afb91:123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Output protocol connected (endpoint_flow)
+2026-11-05 09:56:25.849 Df App[20959:edc2] [com.apple.WebKit:PerformanceLogging] WebContent[20975]: PerformanceMonitor::measurePostLoadCPUUsage: Process was using 9.3% CPU after the page load.
+2026-11-05 09:56:27.694 Df App[20959:ed46] [com.apple.network:connection] [C10 01C30F8F-93EB-4A01-93DE-5D9D92E900CB Hostname#a8bc4344:123 udp, attribution: developer] cancel
+2026-11-05 09:56:27.694 Df App[20959:ed46] [com.apple.network:connection] [C10 01C30F8F-93EB-4A01-93DE-5D9D92E900CB Hostname#a8bc4344:123 udp, attribution: developer] cancelled
+	[C10.1.1 56A5C1AF-DA5C-4DFF-8BC2-D22DBE567CE8 192.168.64.4:65398<->IPv4#f08afb91:123]
+	Connected Path: satisfied (Path is satisfied), interface: en0
+	Privacy Stance: Not Eligible
+	Duration: 2.130s, DNS @0.002s took 0.002s, UDP @0.005s took 0.000s
+	bytes in/out: 0/48, packets in/out: 0/1, rtt: 0.000s, retransmitted bytes: 0, out-of-order bytes: 0
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-05 09:56:27.695 Df App[20959:ed46] [com.apple.network:connection] nw_connection_report_state_with_handler_on_nw_queue [C10] reporting state cancelled
+2026-11-05 09:56:27.695 Df App[20959:ed46] [com.apple.network:connection] [C11 FF1A5319-3E4B-44A4-B322-89AA9D2F3EA5 Hostname#a8bc4344:123 udp, attribution: developer, context: Default Network Context (private), proc: C6970122-541F-3537-A43E-9119FD9EE336, delegated upid: 0] start
+2026-11-05 09:56:27.695 Df App[20959:ed46] [com.apple.network:connection] [C11 Hostname#a8bc4344:123 initial parent-flow ((null))] event: path:start @0.000s
+2026-11-05 09:56:27.695 Df App[20959:ed46] [com.apple.network:connection] [C11 Hostname#a8bc4344:123 waiting parent-flow (satisfied (Path is satisfied), interface: en0)] event: path:satisfied @0.000s, uuid: 2E611CC3-DA5B-4D81-A56C-6B0F3397AB6A
+2026-11-05 09:56:27.695 Df App[20959:ed46] [com.apple.network:connection] [C11 Hostname#a8bc4344:123 in_progress parent-flow (satisfied (Path is satisfied), interface: en0)] event: flow:start_connect @0.000s
+2026-11-05 09:56:27.695 Df App[20959:ed46] [com.apple.network:connection] nw_connection_report_state_with_handler_on_nw_queue [C11] reporting state preparing
+2026-11-05 09:56:27.695 Df App[20959:ed46] [com.apple.network:connection] [C11 Hostname#a8bc4344:123 in_progress parent-flow (satisfied (Path is satisfied), interface: en0)] event: flow:start_child @0.000s
+2026-11-05 09:56:27.695 Df App[20959:ed46] [com.apple.network:connection] [C11.1 Hostname#a8bc4344:123 initial path ((null))] event: path:start @0.000s
+2026-11-05 09:56:27.695 Df App[20959:ed46] [com.apple.network:connection] [C11.1 Hostname#a8bc4344:123 waiting path (satisfied (Path is satisfied), interface: en0)] event: path:satisfied @0.000s, uuid: 2E611CC3-DA5B-4D81-A56C-6B0F3397AB6A
+2026-11-05 09:56:27.696 Df App[20959:ed46] [com.apple.network:connection] [C11.1 Hostname#a8bc4344:123 in_progress resolver (satisfied (Path is satisfied), interface: en0)] event: resolver:start_dns @0.000s
+2026-11-05 09:56:27.696 Df App[20959:ed46] [com.apple.network:connection] nw_endpoint_resolver_update [C11.1 Hostname#a8bc4344:123 in_progress resolver (satisfied (Path is satisfied), interface: en0)] Adding endpoint handler for IPv4#f08afb91:123
+2026-11-05 09:56:27.696 Df App[20959:ed46] [com.apple.network:connection] nw_endpoint_resolver_update [C11.1 Hostname#a8bc4344:123 in_progress resolver (satisfied (Path is satisfied), interface: en0)] Adding endpoint handler for IPv4#df5958e9:123
+2026-11-05 09:56:27.696 Df App[20959:ed46] [com.apple.network:connection] nw_endpoint_resolver_update [C11.1 Hostname#a8bc4344:123 in_progress resolver (satisfied (Path is satisfied), interface: en0)] Adding endpoint handler for IPv4#8f7d0029:123
+2026-11-05 09:56:27.696 Df App[20959:ed46] [com.apple.network:connection] nw_endpoint_resolver_update [C11.1 Hostname#a8bc4344:123 in_progress resolver (satisfied (Path is satisfied), interface: en0)] Adding endpoint handler for IPv4#4d65eef7:123
+2026-11-05 09:56:27.696 Df App[20959:ed46] [com.apple.network:connection] [C11.1 Hostname#a8bc4344:123 in_progress resolver (satisfied (Path is satisfied), interface: en0)] event: resolver:receive_dns @0.001s
+2026-11-05 09:56:27.697 Df App[20959:ed46] [com.apple.network:connection] [C11.1.1 IPv4#f08afb91:123 initial path ((null))] event: path:start @0.001s
+2026-11-05 09:56:27.697 Df App[20959:ed46] [com.apple.network:connection] [C11.1.1 IPv4#f08afb91:123 waiting path (satisfied (Path is satisfied), interface: en0)] event: path:satisfied @0.002s, uuid: 56A5C1AF-DA5C-4DFF-8BC2-D22DBE567CE8
+2026-11-05 09:56:27.697 Df App[20959:ed46] [com.apple.network:connection] [C11.1.1 IPv4#f08afb91:123 in_progress socket-flow (satisfied (Path is satisfied), interface: en0)] event: flow:start_connect @0.002s
+2026-11-05 09:56:27.698 Df App[20959:ed46] [com.apple.network:connection] nw_flow_connected [C11.1.1 IPv4#f08afb91:123 in_progress socket-flow (satisfied (Path is satisfied), interface: en0)] Output protocol connected (socket)
+2026-11-05 09:56:27.698 Df App[20959:ed46] [com.apple.network:connection] [C11.1.1 IPv4#f08afb91:123 ready socket-flow (satisfied (Path is satisfied), interface: en0)] event: flow:child_finish_connect @0.003s
+2026-11-05 09:56:27.698 Df App[20959:ed46] [com.apple.network:connection] [C11.1 Hostname#a8bc4344:123 ready resolver (satisfied (Path is satisfied), interface: en0)] event: flow:child_finish_connect @0.003s
+2026-11-05 09:56:27.698 Df App[20959:ed46] [com.apple.network:connection] nw_flow_connected [C11 IPv4#f08afb91:123 in_progress parent-flow (satisfied (Path is satisfied), interface: en0)] Output protocol connected (endpoint_flow)
+2026-11-05 09:56:27.698 Df App[20959:ed46] [com.apple.network:connection] [C11 IPv4#f08afb91:123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] event: flow:finish_connect @0.003s
+2026-11-05 09:56:27.699 Df App[20959:ed46] [com.apple.network:connection] nw_connection_report_state_with_handler_on_nw_queue [C11] reporting state ready
+2026-11-05 09:56:27.699 Df App[20959:ed46] [com.apple.network:connection] nw_socket_handle_socket_event [C11.1.1:1] Socket received CONNECTED event
+2026-11-05 09:56:27.699 Df App[20959:ed46] [com.apple.network:connection] nw_flow_connected [C11.1.1 IPv4#f08afb91:123 ready socket-flow (satisfied (Path is satisfied), interface: en0)] Output protocol connected (socket)
+2026-11-05 09:56:27.700 Df App[20959:ed46] [com.apple.network:connection] nw_flow_connected [C11 IPv4#f08afb91:123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Output protocol connected (endpoint_flow)
+2026-11-05 09:56:29.828 Df App[20959:ed3f] [com.apple.network:connection] [C11 FF1A5319-3E4B-44A4-B322-89AA9D2F3EA5 Hostname#a8bc4344:123 udp, attribution: developer] cancel
+2026-11-05 09:56:29.829 Df App[20959:ed3f] [com.apple.network:connection] [C11 FF1A5319-3E4B-44A4-B322-89AA9D2F3EA5 Hostname#a8bc4344:123 udp, attribution: developer] cancelled
+	[C11.1.1 56A5C1AF-DA5C-4DFF-8BC2-D22DBE567CE8 192.168.64.4:52463<->IPv4#f08afb91:123]
+	Connected Path: satisfied (Path is satisfied), interface: en0
+	Privacy Stance: Not Eligible
+	Duration: 2.133s, DNS @0.000s took 0.001s, UDP @0.002s took 0.001s
+	bytes in/out: 0/48, packets in/out: 0/1, rtt: 0.000s, retransmitted bytes: 0, out-of-order bytes: 0
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-05 09:56:29.831 Df App[20959:ed3f] [com.apple.network:connection] nw_connection_report_state_with_handler_on_nw_queue [C11] reporting state cancelled
+2026-11-05 09:56:30.140 Df App[20959:ed31] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Removing all pending notification requests
+2026-11-05 09:56:30.141 Df App[20959:ed31] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Adding notification request CACD-9C94 to destinations: Default, contentDate: (null)
+2026-11-05 09:56:30.141 A  App[20959:ed31] (libsystem_containermanager.dylib) container_create_or_lookup_app_group_path_by_app_group_identifier
+2026-11-05 09:56:30.141 Df App[20959:ed31] [com.apple.containermanager:xpc] Requesting app group container lookup; identifier = group.site.xiaomanhabit.kadian, euid = 501, uid = 501, platform = 7
+2026-11-05 09:56:30.143 E  App[20959:ed31] [com.apple.containermanager:unspecified] container_create_or_lookup_app_group_path_by_app_group_identifier: client is not entitled
+2026-11-05 09:56:30.154 Df App[20959:ed46] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Added notification request: [ hasError: 0 hasCompletionHandler: 1 ]
+2026-11-05 09:56:30.154 Df App[20959:ed31] [com.apple.activitykit:outputClient] Fetched descriptors for content states: ["A912B995-B1A5-48C9-9647-6240111C3776"]
+2026-11-05 09:56:30.156 Df App[20959:ed31] [com.apple.activitykit:outputClient] Fetched descriptors for content states: ["A912B995-B1A5-48C9-9647-6240111C3776"]
+2026-11-05 09:56:30.156 Df App[20959:ed31] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Adding notification request 9E58-E1A9 to destinations: Default, contentDate: (null)
+2026-11-05 09:56:30.160 Df App[20959:ed3f] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Added notification request: [ hasError: 0 hasCompletionHandler: 1 ]
+2026-11-05 09:56:30.160 Df App[20959:ed31] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Adding notification request 3C60-CDAC to destinations: Default, contentDate: (null)
+2026-11-05 09:56:30.162 Df App[20959:ed44] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Added notification request: [ hasError: 0 hasCompletionHandler: 1 ]
+2026-11-05 09:56:30.163 Df App[20959:ed31] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Adding notification request 9602-C2D0 to destinations: Default, contentDate: (null)
+2026-11-05 09:56:30.166 Df App[20959:ed46] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Added notification request: [ hasError: 0 hasCompletionHandler: 1 ]
+2026-11-05 09:56:30.166 Df App[20959:ed31] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Adding notification request 8A6B-300D to destinations: Default, contentDate: (null)
+2026-11-05 09:56:30.167 Df App[20959:ed44] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Added notification request: [ hasError: 0 hasCompletionHandler: 1 ]
+2026-11-05 09:56:30.167 Df App[20959:ed31] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Adding notification request AAE8-FE22 to destinations: Default, contentDate: (null)
+2026-11-05 09:56:30.168 Df App[20959:ed44] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Added notification request: [ hasError: 0 hasCompletionHandler: 1 ]
+2026-11-05 09:56:30.168 Df App[20959:ed31] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Getting notification settings (async)
+2026-11-05 09:56:30.175 Df App[20959:ed46] [com.apple.UserNotifications:Connections] [site.xiaomanhabit.kadian] Got notification settings [ hasResult: 1 hasCompletionHandler: 1 ]
+2026-11-05 09:56:30.189 Df App[20959:ed46] [com.apple.chrono:widget] reloadAllTimelines() - reloaded all timelines
