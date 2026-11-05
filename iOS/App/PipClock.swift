@@ -65,7 +65,6 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
             // 系统的自动开启不一定触发，退出时补一次
             resignObs = NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
                 guard let self, self.active, let c = self.controller, !c.isPictureInPictureActive else { return }
-                Diag.add("悬浮窗 退出卡点，系统说可以开=\(c.isPictureInPicturePossible)")
                 self.callVC?.view.alpha = 1
                 c.startPictureInPicture()
             }
@@ -73,7 +72,6 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         if activeObs == nil {
             activeObs = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
                 guard let self, self.active, let c = self.controller, c.isPictureInPictureActive else { return }
-                Diag.add("悬浮窗 回到卡点，收起")
                 self.hidingForApp = true
                 c.stopPictureInPicture()
             }
@@ -141,7 +139,6 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
         restartTimer()
         tick()
         watchLifecycle()
-        Diag.add("悬浮窗 已准备，退出卡点时出现，系统说可以开=\(controller?.isPictureInPicturePossible ?? false)")
         done(true)
     }
 
@@ -163,7 +160,6 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     }
 
     private func startFailed(fallback: Bool, why: String) {
-        Diag.add("悬浮窗 \(usedCall ? "通话式" : "普通") \(why)")
         possibleObs = nil
         if fallback, usedCall {
             controller = nil; callVC = nil; layer?.removeFromSuperlayer(); layer = nil; host?.removeFromSuperview(); host = nil
@@ -177,7 +173,6 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     func stop() {
         byUser = true
-        Diag.add("悬浮窗 用户关闭 starting=\(starting) 显示中=\(controller?.isPictureInPictureActive ?? false)")
         // 正在打开的窗口不能直接丢掉，否则控制器没了窗口还在。等它开好马上关
         if starting { stopAfterStart = true; return }
         if let c = controller, c.isPictureInPictureActive { c.stopPictureInPicture() } else { cleanup() }
@@ -214,7 +209,6 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
             src = AVPictureInPictureController.ContentSource(sampleBufferDisplayLayer: l, playbackDelegate: self)
         }
         usedCall = call
-        Diag.add("悬浮窗 用\(call ? "通话式" : "普通")画中画")
         let c = AVPictureInPictureController(contentSource: src)
         c.delegate = self
         if !call { c.requiresLinearPlayback = true }
@@ -494,7 +488,6 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
     func pictureInPictureControllerDidStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
         active = true
         starting = false
-        Diag.add("悬浮窗 显示了")
         if stopAfterStart {
             stopAfterStart = false
             pending?(true); pending = nil
@@ -506,7 +499,6 @@ final class PipClock: NSObject, AVPictureInPictureControllerDelegate, AVPictureI
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, failedToStartPictureInPictureWithError error: Error) {
         starting = false
-        Diag.add("悬浮窗 开启失败：\(error.localizedDescription)")
         if stopAfterStart { stopAfterStart = false; cleanup(); return }
         // 退出时开不起来不算关闭，下次退出再试
     }
@@ -556,7 +548,6 @@ enum Beep {
         }
         players[end]?.currentTime = 0
         let ok = players[end]?.play() ?? false
-        Diag.add("提示音 \(end ? "到点" : "嘀") 播放\(ok ? "成功" : "失败")")
     }
     private static func wav(freq: Double, seconds: Double, gain: Double) -> Data {
         let rate = 44100, n = Int(Double(rate) * seconds)

@@ -24,17 +24,15 @@ enum LiveCountdown {
                 await a.end(nil, dismissalPolicy: .immediate)
             }
         }
-        guard info.areActivitiesEnabled else { Diag.add("灵动岛：系统设置里实时活动是关的"); return false }
-        guard let w = want else { Diag.add("灵动岛：没有 8 小时内开抢且打开灵动岛的活动，不启动"); return true }
-        guard w.target > Date() else { Diag.add("灵动岛：\(w.name) 已过开抢时间"); return true }
-        if Activity<CountdownAttributes>.activities.contains(where: { $0.attributes.id == w.id }) { Diag.add("灵动岛：\(w.name) 已在显示"); return true }
+        guard info.areActivitiesEnabled else { return false }
+        guard let w = want else { return true }
+        guard w.target > Date() else { return true }
+        if Activity<CountdownAttributes>.activities.contains(where: { $0.attributes.id == w.id }) { return true }
         do {
             _ = try Activity.request(attributes: CountdownAttributes(id: w.id, name: w.name, srcName: w.srcName),
                                      content: ActivityContent(state: .init(target: w.target), staleDate: w.target),
                                      pushType: nil)
-            Diag.add("灵动岛：\(w.name) 启动成功")
         } catch {
-            Diag.add("灵动岛启动失败：\(error.localizedDescription)")
         }
         return true
     }

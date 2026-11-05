@@ -16,7 +16,6 @@ final class Purchases: ObservableObject {
     @Published var message: String?
     /// 第一次读完购买记录（之前的 plan 还不可信）
     @Published var loaded = false
-    @Published var isTestVIP = false
     private var updates: Task<Void, Never>?
 
     func start() async {
@@ -52,8 +51,6 @@ final class Purchases: ObservableObject {
             let k = t.productID == AppConfig.vipLife ? "life" : t.productID == AppConfig.vipYear ? "year" : t.productID == AppConfig.vipMonth ? "month" : "free"
             if rank[k, default: 0] > rank[p, default: 0] { p = k; exp = t.expirationDate }
         }
-        isTestVIP = p == "free" && TestMode.vip
-        if isTestVIP { p = "life"; exp = nil }
         plan = p
         expires = p == "life" ? nil : exp
         isVIP = p != "free"
@@ -80,7 +77,7 @@ final class Purchases: ObservableObject {
             let c = Calendar.current.dateComponents([.year, .month, .day], from: e)
             exp = String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
         }
-        return ["plan": plan, "test": isTestVIP, "expires": exp, "offers": offers, "storefront": storefront]
+        return ["plan": plan, "expires": exp, "offers": offers, "storefront": storefront]
     }
 
     @discardableResult

@@ -18,7 +18,6 @@ enum CalendarRead {
                 .sorted { $0.startDate < $1.startDate }
                 .prefix(300)
                 .map { e -> [String: Any] in ["title": e.title ?? "", "at": e.startDate.timeIntervalSince1970 * 1000] }
-            Diag.add("读日历 未来半年 \(list.count) 条")
             DispatchQueue.main.async { done(["events": Array(list)]) }
         }
     }

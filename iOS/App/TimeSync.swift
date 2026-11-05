@@ -55,12 +55,10 @@ enum TimeSync {
                 if Task.isCancelled { return nil }
             }
             guard let b = best else {
-                Diag.add("对时 \(src) \(way.label) 失败")
                 continue
             }
             var prec = 0
             if case .date = way { prec = 1000 }
-            Diag.add("对时 \(src) \(way.label) 成功 偏差\(Int(b.offset))ms 往返\(Int(b.rtt))ms 精度\(prec)ms")
             return ["offset": b.offset.rounded(), "rtt": b.rtt.rounded(), "prec": prec]
         }
         return nil

@@ -45,36 +45,6 @@ enum UserID {
     }
 }
 
-/// 测试工具（读链接测试、诊断行、摇一摇菜单）。
-/// 审核环境也是沙盒票据，分不出来，所以沙盒里默认也关着，和正式版看到的一样：
-/// 测试的人在「我的」连点版本号 10 次打开（只对这台手机）。App Store 下载的正式版打不开。
-/// 这样老板测过的 TestFlight 包可以直接提交，不用重新打包。
-enum TestMode {
-    private static var isSandbox: Bool {
-        #if DEBUG
-        return true
-        #else
-        return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
-        #endif
-    }
-    private static let unlockKey = "testToolsUnlocked"
-    static var isTestBuild: Bool { isSandbox && UserDefaults.standard.bool(forKey: unlockKey) }
-    /// 打开测试工具；正式版返回 false
-    static func unlock() -> Bool {
-        guard isSandbox else { return false }
-        UserDefaults.standard.set(true, forKey: unlockKey)
-        return true
-    }
-    static func lock() { UserDefaults.standard.set(false, forKey: unlockKey) }
-    static let vipKey = "testVIP"
-    static var vip: Bool {
-        guard isTestBuild else { return false }
-        let d = UserDefaults.standard
-        return d.object(forKey: vipKey) == nil ? false : d.bool(forKey: vipKey) // 默认不是会员，TestFlight 里的购买是沙盒，不花钱
-    }
-    static func setVip(_ on: Bool) { UserDefaults.standard.set(on, forKey: vipKey) }
-}
-
 enum DeviceInfo {
     static var model: String {
         var sys = utsname()
@@ -127,7 +97,6 @@ struct WebRootView: View {
     @State private var splashGone = false
     @State private var minShown = false
     @State private var pendingRoute: String?
-    @State private var askTest = false
 
     /// 从小组件、通知、网址打开某个页面：网页准备好、开屏结束后交给网页（网页会先等密码锁验证）
     private func route(_ r: String) {
@@ -189,20 +158,6 @@ struct WebRootView: View {
                 if p == .active { bridge.deliverWidgetTaps() }
                 if p == .background { bridge.flush { WidgetCenter.shared.reloadAllTimelines() } }
             }
-            // 测试包：摇一摇打开测试菜单（复制对时和读链接的记录，发给开发）
-            .onReceive(NotificationCenter.default.publisher(for: .deviceDidShake)) { _ in if TestMode.isTestBuild { askTest = true } }
-            .confirmationDialog("测试菜单", isPresented: $askTest, titleVisibility: .visible) {
-                Button("测一遍所有时间源，复制结果") {
-                    Task {
-                        for src in TimeSync.allSources { _ = await TimeSync.sync(src) }
-                        UIPasteboard.general.string = Diag.text
-                    }
-                }
-                Button("复制测试记录") { UIPasteboard.general.string = Diag.text }
-                Button("读链接测试") { UIApplication.topViewController()?.present(UIHostingController(rootView: LinkTestView()), animated: true) }
-                Button("关闭测试工具（重开 App 生效）") { TestMode.lock() }
-                Button("取消", role: .cancel) {}
-            } message: { Text("这个菜单只在打开测试工具后出现。") }
     }
 }
 
@@ -324,7 +279,6 @@ final class WebBridge: NSObject, ObservableObject, WKScriptMessageHandlerWithRep
           window.__XM_NATIVE__=true;
           window.__XM_VER__={v:'\(DeviceInfo.appVersion)',b:'\(DeviceInfo.build)'};
           window.__XM_UID__='\(UserID.value)';
-          window.__XM_TEST__=\(TestMode.isTestBuild ? "true" : "false");
           window.__XM_SYSLANG__='\(Locale.preferredLanguages.first ?? "zh-Hans")';
           window.__XM_LANGPREF__='\(L10n.pref)';
           try{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:function(t){return N({cmd:'copy',text:String(t)}).then(function(){})},readText:function(){return N({cmd:'paste'}).then(function(v){return v||''})}}})}catch(e){}
@@ -391,12 +345,6 @@ final class WebBridge: NSObject, ObservableObject, WKScriptMessageHandlerWithRep
             CalendarRead.upcoming { replyHandler($0, nil) }
         case "openapp":
             AppLink.open(body["url"] as? String ?? "") { replyHandler($0, nil) }
-        case "devunlock":
-            replyHandler(TestMode.unlock(), nil)
-        case "linktest":
-            guard let top = UIApplication.topViewController(), TestMode.isTestBuild else { replyHandler(false, nil); return }
-            top.present(UIHostingController(rootView: LinkTestView()), animated: true)
-            replyHandler(true, nil)
         case "paste":
             // 系统会弹「想从某 App 粘贴」的提示，所以只在用户点了粘贴或「使用」后才读
             replyHandler(UIPasteboard.general.string ?? "", nil)
@@ -600,10 +548,12 @@ final class WebBridge: NSObject, ObservableObject, WKScriptMessageHandlerWithRep
             self?.syncVip()
             self?.deliverWidgetTaps()
         }
-        // 截图测试用：启动参数 -shotJS <base64 脚本>，页面加载后执行
+        // 商店截图用（sim-shots 走 Debug 编译）：启动参数 -shotJS <base64 脚本>，页面加载后执行；正式包没有
+        #if DEBUG
         if let b = UserDefaults.standard.string(forKey: "shotJS"), let d = Data(base64Encoded: b), let js = String(data: d, encoding: .utf8) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in self?.webView?.evaluateJavaScript(js) }
         }
+        #endif
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { webView.reload() }
@@ -643,16 +593,5 @@ extension UIApplication {
         var top = scene?.windows.first { $0.isKeyWindow }?.rootViewController ?? scene?.windows.first?.rootViewController
         while let p = top?.presentedViewController { top = p }
         return top
-    }
-}
-
-extension Notification.Name {
-    static let deviceDidShake = Notification.Name("deviceDidShake")
-}
-
-extension UIWindow {
-    open override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
-        if motion == .motionShake { NotificationCenter.default.post(name: .deviceDidShake, object: nil) }
-        super.motionEnded(motion, with: event)
     }
 }

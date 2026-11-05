@@ -36,7 +36,7 @@ enum AppLink {
     static func open(_ raw: String, done: @escaping (Any) -> Void) {
         guard let url = URL(string: raw) else { done(false); return }
         UIApplication.shared.open(url, options: [.universalLinksOnly: true]) { ok in
-            if ok { Diag.add("跳转 \(url.host ?? "") 通用链接成功"); done("app"); return }
+            if ok { done("app"); return }
             tryNext(candidates(url), url, done)
         }
     }
@@ -44,13 +44,11 @@ enum AppLink {
     private static func tryNext(_ list: [URL], _ url: URL, _ done: @escaping (Any) -> Void) {
         guard let first = list.first else {
             UIApplication.shared.open(url, options: [:]) { ok in
-                Diag.add("跳转 \(url.host ?? "") 用浏览器 \(ok)")
                 done(ok ? "browser" : false)
             }
             return
         }
         UIApplication.shared.open(first, options: [:]) { ok in
-            Diag.add("跳转 \(first.scheme ?? "") \(ok ? "成功" : "失败")")
             if ok { done("app") } else { tryNext(Array(list.dropFirst()), url, done) }
         }
     }

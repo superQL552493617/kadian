@@ -27,7 +27,6 @@ final class LinkReader: NSObject, WKNavigationDelegate {
             done(["unsupported": true]); return
         }
         guard allowed(comp.host) else {
-            Diag.add("读链接 \(comp.host ?? "?") 不在平台名单，没读")
             done(["unsupported": true]); return
         }
         comp.scheme = "https"
@@ -149,7 +148,6 @@ final class LinkReader: NSObject, WKNavigationDelegate {
             let b = t.index(rg.upperBound, offsetBy: 30, limitedBy: t.endIndex) ?? t.endIndex
             near = String(t[a..<b]).replacingOccurrences(of: "\n", with: " ")
         }
-        Diag.add("读链接 \(host) \(ms)ms 被拦\(r["blocked"] as? Bool ?? false) 标题「\(last["title"] as? String ?? "")」大字「\(last["head"] as? String ?? "")」开抢字段\(Int((last["sell"] as? NSNumber)?.doubleValue ?? 0)) 文字\(t.count)字 开抢附近「\(near)」")
         web?.stopLoading()
         web?.navigationDelegate = nil
         web?.removeFromSuperview()
