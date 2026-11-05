@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """App Store Connect 会员商品：检查 / 创建（年度卡、月度卡订阅 + 永久会员买断）。
 
-用法：python3 ci/asc_iap.py check|setup
+用法：python3 ci/asc_iap.py check|setup|note|reviewshot
 环境变量：KEY_ID ISSUER_ID KEY_PATH（GitHub Actions 里从加密的密钥解出来）
 只打印商品和价格信息，不打印任何密钥。
 """
@@ -310,6 +310,25 @@ def main():
         for i in iaps:
             api("PATCH", f"/v2/inAppPurchases/{i['id']}", {"data": {"type": "inAppPurchases", "id": i["id"], "attributes": {"reviewNote": REVIEW_NOTE}}})
             print("已更新说明", i["attributes"]["productId"])
+    if MODE == "reviewshot":
+        # 已有商品：换成当前 ci/iap_review.png（setup 只在第一次创建时传截图），同时更新给审核看的说明
+        groups, inc = all_pages(f"/v1/apps/{app}/subscriptionGroups", {"include": "subscriptions", "limit": 50})
+        for x in inc:
+            if x["type"] != "subscriptions":
+                continue
+            old = api("GET", f"/v1/subscriptions/{x['id']}/appStoreReviewScreenshot", ok=(200, 404))
+            if old and old.get("data"):
+                api("DELETE", f"/v1/subscriptionAppStoreReviewScreenshots/{old['data']['id']}")
+            api("PATCH", f"/v1/subscriptions/{x['id']}", {"data": {"type": "subscriptions", "id": x["id"], "attributes": {"reviewNote": REVIEW_NOTE}}})
+            upload_shot(x["attributes"]["productId"], "subscriptions", x["id"])
+        iaps, _ = all_pages(f"/v1/apps/{app}/inAppPurchasesV2", {"limit": 200})
+        for i in iaps:
+            old = api("GET", f"/v2/inAppPurchases/{i['id']}/appStoreReviewScreenshot", ok=(200, 404))
+            if old and old.get("data"):
+                api("DELETE", f"/v1/inAppPurchaseAppStoreReviewScreenshots/{old['data']['id']}")
+            api("PATCH", f"/v2/inAppPurchases/{i['id']}", {"data": {"type": "inAppPurchases", "id": i["id"], "attributes": {"reviewNote": REVIEW_NOTE}}})
+            upload_shot(i["attributes"]["productId"], "inAppPurchases", i["id"])
+        time.sleep(15)
     if MODE == "setup":
         terrs = territories()
         print("地区数：", len(terrs))

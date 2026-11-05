@@ -157,7 +157,7 @@ def meta():
     api("PATCH", f"/v1/appInfoLocalizations/{loc['id']}", {"data": {"type": "appInfoLocalizations", "id": loc["id"],
         "attributes": {"privacyPolicyUrl": PAGES + "privacy.html"}}}) and print("ok privacyPolicyUrl")
     api("PATCH", f"/v1/appInfos/{inf['id']}", {"data": {"type": "appInfos", "id": inf["id"], "relationships": {
-        "primaryCategory": rel("appCategories", "PRODUCTIVITY"), "secondaryCategory": rel("appCategories", "LIFESTYLE")}}}) and print("ok categories")
+        "primaryCategory": rel("appCategories", "UTILITIES")}}}) and print("ok categories")
     ar = first(f"/v1/appInfos/{inf['id']}/ageRatingDeclaration")
     if ar:
         attrs = {}
@@ -180,7 +180,7 @@ def meta():
     api("PATCH", f"/v1/apps/{aid}", {"data": {"type": "apps", "id": aid, "attributes": {"contentRightsDeclaration": "USES_THIRD_PARTY_CONTENT"}}}) and print("ok contentRights")
     ver = [v for v in all_pages(f"/v1/apps/{aid}/appStoreVersions")[0] if v["attributes"].get("appStoreState") in ("PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED")][0]
     api("PATCH", f"/v1/appStoreVersions/{ver['id']}", {"data": {"type": "appStoreVersions", "id": ver["id"],
-        "attributes": {"copyright": APP.get("copyright", ""), "releaseType": "AFTER_APPROVAL"}}}) and print("ok copyright")
+        "attributes": {"versionString": APP.get("marketingVersion", ver["attributes"]["versionString"]), "copyright": APP.get("copyright", ""), "releaseType": "AFTER_APPROVAL"}}}) and print("ok copyright, version")
     vl = first(f"/v1/appStoreVersions/{ver['id']}/appStoreVersionLocalizations")
     api("PATCH", f"/v1/appStoreVersionLocalizations/{vl['id']}", {"data": {"type": "appStoreVersionLocalizations", "id": vl["id"],
         "attributes": {"description": DESC, "keywords": KEYWORDS, "promotionalText": PROMO, "supportUrl": PAGES, "marketingUrl": PAGES}}}) and print("ok description")
@@ -391,12 +391,13 @@ def locales():
         if ver:
             vl, _ = all_pages(f"/v1/appStoreVersions/{ver['id']}/appStoreVersionLocalizations")
             cur = next((x for x in vl if x["attributes"]["locale"] == loc), None)
-            attrs = {k: d[k] for k in ("description", "keywords", "promotionalText", "supportUrl", "marketingUrl", "whatsNew")}
+            attrs = {k: d[k] for k in ("description", "keywords", "promotionalText", "supportUrl", "marketingUrl")}
+            if d.get("whatsNew"): attrs["whatsNew"] = d["whatsNew"]   # 第一个版本不能写更新说明
             if cur: r = api("PATCH", f"/v1/appStoreVersionLocalizations/{cur['id']}", {"data": {"type": "appStoreVersionLocalizations", "id": cur["id"], "attributes": attrs}})
             else:
                 a2 = dict(attrs, locale=loc); a2.pop("whatsNew", None)
                 r = api("POST", "/v1/appStoreVersionLocalizations", {"data": {"type": "appStoreVersionLocalizations", "attributes": a2, "relationships": {"appStoreVersion": rel("appStoreVersions", ver["id"])}}})
-                if r: api("PATCH", f"/v1/appStoreVersionLocalizations/{r['data']['id']}", {"data": {"type": "appStoreVersionLocalizations", "id": r["data"]["id"], "attributes": {"whatsNew": d["whatsNew"]}}})
+                if r and d.get("whatsNew"): api("PATCH", f"/v1/appStoreVersionLocalizations/{r['data']['id']}", {"data": {"type": "appStoreVersionLocalizations", "id": r["data"]["id"], "attributes": {"whatsNew": d["whatsNew"]}}})
             print(loc, "version", "ok" if r else "failed")
         else:
             print("no editable version: run 'newversion 1.1' first")

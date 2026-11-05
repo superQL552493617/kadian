@@ -1,13 +1,16 @@
 {
- "name": "TODO name",
- "subtitle": "TODO subtitle",
- "keywords": "TODO keywords",
- "promotionalText": "TODO promotionalText",
- "whatsNew": "TODO whatsNew",
- "description": "TODO description",
+ "name": "OnTime Clock",
+ "subtitle": "Sale countdown, right on time",
+ "keywords": "ticket,sale,flash,countdown,floating,timer,sync,concert,dynamic island,alarm,reminder,beijing time",
+ "promotionalText": "Paste a sale link, check the start time, then keep the countdown in view in a floating window. No sign-up needed.",
+ "whatsNew": "",
+ "description": "OnTime Clock helps you see the exact time before a sale starts. Add a sale and it counts down using the time of the platform you chose. Switch to the shopping app and keep watching in the floating window. No sign-up needed.\n\nHOW IT WORKS\n1. Paste a sale link or scan a QR code. If a title and start time can be read, you confirm them before they are filled in. If not, enter them by hand or add from your calendar.\n2. Tap \"Floating window\" on the sale's card and switch to the shopping app.\n3. Get a reminder before the start, watch the clock and place your order yourself.\n\nFEATURES\n- Time sync: each sale syncs with the public time of the platform you chose. If it can't sync, the card tells you it is using your phone's time.\n- Manual adjustment: per sale, in 0.5 second steps.\n- Floating window: 3 shapes, 6 color styles, optional milliseconds. The last seconds change color without flashing. Your music keeps playing. Position and size are controlled by the system.\n- Dynamic Island and Lock Screen: the next sale's countdown appears once you have opened the app within 8 hours of the start.\n- Reminders: choose how early to be reminded, and pick an alarm tone that also rings on the Lock Screen and in the background.\n- Several sales at once: same-size cards, cleared from the list once a sale starts.\n- Jump to app: open the platform from any sale with a link.\n- Home Screen widget: the next sale's countdown.\n\nGOOD TO KNOW\n- OnTime Clock only shows the time. It doesn't buy for you, simulate taps or touch your platform accounts, and it can't guarantee a purchase.\n- Some platforms only publish time to the second.\n- A start time read from a link may be wrong. Check it against the platform before filling it in.\n- Your sales and settings stay on your phone.\n\nMEMBERSHIP\nBasic features are free, with up to 3 sales at a time. Members get an ad-free experience and unlimited sales.\n- Lifetime: one-time purchase, does not renew.\n- Quarterly: auto-renewing subscription, billed every 3 months. Payment is charged to your Apple Account at confirmation. It renews within 24 hours before the period ends unless turned off at least 24 hours before. Manage or cancel in Settings > Apple Account > Subscriptions.\n- On a new phone, tap \"Restore purchases\" on the membership page.\n- Terms of Use: {PAGES}en/terms.html\n- Privacy Policy: {PAGES}en/privacy.html",
  "privacyPolicyUrl": "{PAGES}en/privacy.html",
  "supportUrl": "{PAGES}en/",
  "marketingUrl": "{PAGES}en/",
- "iap": {},
+ "iap": {
+  "site.xiaomanhabit.kadian.vip.quarter": ["Quarterly", "Ad-free, unlimited sales, renews quarterly"],
+  "site.xiaomanhabit.kadian.vip.life": ["Lifetime", "One-time purchase: ad-free, unlimited sales"]
+ },
  "group": "Premium"
 }
