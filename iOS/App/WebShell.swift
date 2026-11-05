@@ -124,6 +124,11 @@ struct WebRootView: View {
         } else { pendingRoute = r }
     }
 
+    // 网页准备好以后，开屏再多停 1 秒（老板 2026-11-04）；点一下屏幕可以马上跳过
+    private func endSplashLater() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { endSplash() }
+    }
+
     private func endSplash() {
         guard !splashGone else { return }
         splashGone = true
@@ -144,9 +149,9 @@ struct WebRootView: View {
             }
             .animation(.easeOut(duration: 0.15), value: splashGone)
             .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { minShown = true; if bridge.ready { endSplash() } }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { minShown = true; if bridge.ready { endSplashLater() } }
             }
-            .onChange(of: bridge.ready) { _, r in if r && minShown { endSplash() } }
+            .onChange(of: bridge.ready) { _, r in if r && minShown { endSplashLater() } }
             // <scheme>://<页面>，比如 starter://note（小组件用）
             .onOpenURL { url in if let h = url.host, !h.isEmpty { route(h) } }
             .onReceive(NotificationCenter.default.publisher(for: .openRoute)) { _ in
