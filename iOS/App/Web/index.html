@@ -13874,12 +13874,12 @@ if(PV.linkSim){await new Promise(f=>setTimeout(f,500));const d=new Date(Date.now
 function calScore(title,name){const t=title||'';let n=/开抢|开售|开票|抢票|抢购|预售|大麦|猫眼|淘宝|拼多多|京东/.test(t)?1:0;
 const seg=(name||'').replace(/[【】「」《》\s·\-]/g,' ').split(' ').filter(x=>x.length>=2);seg.forEach(x=>{if(t.includes(x))n+=2});
 for(let i=0;i+3<=(name||'').length;i+=3)if(t.includes(name.slice(i,i+3)))n+=1;return n}
-function pickFromCalendar(name,done){if(!IN_APP){toast('网页预览读不了日历，装进 App 后可以用','gray');return}
-NN({cmd:'calendar'}).then(r=>{if(r&&r.denied){toast('日历权限没开，可以去系统设置打开','gray');return}
+function pickFromCalendar(name,done,onEnd){const end=()=>{onEnd&&onEnd()};if(!IN_APP){toast('网页预览读不了日历，装进 App 后可以用','gray');end();return}
+NN({cmd:'calendar'}).then(r=>{if(r&&r.denied){toast('日历权限没开，可以去系统设置打开','gray');end();return}
 const list=((r&&r.events)||[]).filter(x=>x.at>Date.now()).map(x=>({...x,sc:calScore(x.title,name)})).sort((a,b)=>b.sc-a.sc||a.at-b.at).slice(0,30);
-if(!list.length){toast('日历里没有未来的日程','gray');return}
-const {sh:s2,close}=openSheet(`<div class="sheet-head"><button class="acx-tx" id="calX">取消</button><h3>从日历添加</h3><span style="width:36px"></span></div><p class="pm-sub">选大麦等 App 写进日历的那一条，它的时间会填成开抢时间。</p><div class="list glass st-list">${list.map((x,i)=>`<button class="li" data-cal="${i}"><span class="t">${esc(x.title||T('（没有标题）'))}<small>${dayLabel(x.at)} ${hms(new Date(x.at))}</small></span><span class="ar">›</span></button>`).join('')}</div>`);s2.classList.add('tall','kd-sh');
-$('#calX',s2).onclick=close;$$('[data-cal]',s2).forEach(b=>b.onclick=()=>{close();done(list[+b.dataset.cal].at)})}).catch(()=>toast('没能读日历','gray'))}
+if(!list.length){toast('日历里没有未来的日程','gray');end();return}
+let picked=false;const {sh:s2,close}=openSheet(`<div class="sheet-head"><button class="acx-tx" id="calX">取消</button><h3>从日历添加</h3><span style="width:36px"></span></div><p class="pm-sub">选大麦等 App 写进日历的那一条，它的时间会填成开抢时间。</p><div class="list glass st-list">${list.map((x,i)=>`<button class="li" data-cal="${i}"><span class="t">${esc(x.title||T('（没有标题）'))}<small>${dayLabel(x.at)} ${hms(new Date(x.at))}</small></span><span class="ar">›</span></button>`).join('')}</div>`,()=>{if(!picked)end()});s2.classList.add('tall','kd-sh');
+$('#calX',s2).onclick=close;$$('[data-cal]',s2).forEach(b=>b.onclick=()=>{picked=true;close();done(list[+b.dataset.cal].at)})}).catch(()=>{toast('没能读日历','gray');end()})}
 
 /* 底部导航图标：和主界面一样的线条图标，选中黑色、没选灰色，不用小满记的彩色插画（老板 2026-11-04） */
 ICONS.today='<svg class="kd-ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.2" r="7.6"/><path d="M12 9.4v3.8l2.6 1.9M9.4 3h5.2M12 3v2.6M18.6 6.6l1.3-1.3"/></svg>';
@@ -13971,18 +13971,20 @@ if(!url)return;
 const hadText=(tt||nameTouched)&&(at||timeTouched);if(hadText||!url){offerResult(tt,at,'从分享文字');return}
 const kept=note,keptW=noteWarn;note='正在读取标题和开抢时间…';noteWarn=false;
 /* 识别期间盖一层提示，挡住其他点击（老板 2026-11-04）。手输链接后点别处时，这一下要先生效：等手指抬起、点击送达再盖（Q37） */
-let waitAl=null,waitEnd=false;const showWait=()=>{if(waitEnd||my!==seq||!sh.isConnected||(viaBlur&&!sh.classList.contains('show')))return;waitAl=openAlert(`<div class="up-spin"><i></i></div><h3>正在识别，请稍候…</h3><p>正在读取标题和开抢时间，一般几秒钟</p>`,'neutral cf')};
+let waitAl=null,waitEnd=false;const showWait=()=>{if(waitEnd||my!==seq||!sh.isConnected||(viaBlur&&!sh.classList.contains('show')))return;if(calOpen){calNext=showWait;return}waitAl=openAlert(`<div class="up-spin"><i></i></div><h3>正在识别，请稍候…</h3><p>正在读取标题和开抢时间，一般几秒钟</p>`,'neutral cf')};
 const wait={close(){waitEnd=true;waitAl&&waitAl.close()}};
 if(viaBlur){const tick=()=>{if(down){setTimeout(tick,60);return}showWait()};setTimeout(tick,120)}else showWait();
-fetchLinkInfo(url).then(r=>{wait.close();if(my!==seq||!sh.isConnected)return;note=kept;noteWarn=keptW;
+/* Q38：日历页开着时，识别提示和读到的结果都先不弹，等日历页关了再说；选了日历就不用读到的结果 */
+const later=f=>{if(calOpen)calNext=()=>{if(my===seq&&sh.isConnected)f()};else f()};
+fetchLinkInfo(url).then(r=>{wait.close();if(my!==seq||!sh.isConnected)return;later(()=>{note=kept;noteWarn=keptW;
 const atV=at||(typeof r.at==='number'?r.at:null),how=at?'从分享文字':'从链接',many=!at&&!timeTouched&&r.cands&&r.cands.length>1;linkMiss=atV==null&&!many;
 if(many){redraw();offerChoice(tt||r.title,r.cands);return}
 if(r.blocked&&!at&&!note){note='平台要求验证，读不到这个页面，请手动填写。';noteWarn=true}
 else if(atV==null&&!timeTouched&&!note){note='这个链接读不到开抢时间，请按平台公布的时间填写。';noteWarn=true}
-redraw();offerResult(tt||r.title,atV,how)}).catch(e=>{wait.close();if(my!==seq||!sh.isConnected)return;
-note=kept;noteWarn=keptW;linkMiss=!at;if(!at&&!timeTouched){note=e&&e.message==='preview'?'网页预览读不了平台页面，装进 App 后会自动读取。现在可以手动填，或粘贴带开抢时间的分享文字。':'没读到标题和开抢时间，请手动填写。';noteWarn=true}redraw();offerResult(tt,at,'从分享文字')})};
+redraw();offerResult(tt||r.title,atV,how)})}).catch(e=>{wait.close();if(my!==seq||!sh.isConnected)return;later(()=>{
+note=kept;noteWarn=keptW;linkMiss=!at;if(!at&&!timeTouched){note=e&&e.message==='preview'?'网页预览读不了平台页面，装进 App 后会自动读取。现在可以手动填，或粘贴带开抢时间的分享文字。':'没读到标题和开抢时间，请手动填写。';noteWarn=true}redraw();offerResult(tt,at,'从分享文字')})})};
 /* 链接框失焦时手指可能还按着别的按钮。这时新提示会把按钮往下挤，这一下就点空了，所以等手指抬起再更新 */
-let hold=false,pend=false,down=false;
+let hold=false,pend=false,down=false,calOpen=false,calNext=null;
 const onUp=()=>{down=false;if(!sh.isConnected){removeEventListener('pointerup',onUp,true);removeEventListener('pointercancel',onUp,true)}};
 sh.addEventListener('pointerdown',()=>{down=true},true);addEventListener('pointerup',onUp,true);addEventListener('pointercancel',onUp,true);
 const holdRedraw=()=>{hold=true;pend=true;const tick=()=>{if(down){setTimeout(tick,60);return}hold=false;if(pend){pend=false;redraw()}};setTimeout(tick,120)};
@@ -13996,7 +13998,7 @@ $('#ieX',sh).onclick=close;
 $('#ieName',sh).oninput=e=>{c.name=e.target.value;nameTouched=!!e.target.value};
 $('#ieLink',sh).onchange=e=>{useLink(e.target.value,true);e.target.value=c.link;holdRedraw()};
 $('#ieLink',sh).onpaste=()=>setTimeout(()=>{const el=$('#ieLink',sh);if(el&&el.value.trim()){useLink(el.value);el.value=c.link;redraw()}},0);
-if($('#ieCal',sh))$('#ieCal',sh).onclick=()=>{buzz();pickFromCalendar(c.name,at=>{fillTime(at,'从日历');redraw()})};
+if($('#ieCal',sh))$('#ieCal',sh).onclick=()=>{buzz();calOpen=true;pickFromCalendar(c.name,at=>{calOpen=false;calNext=null;seq++;note='';noteWarn=false;fillTime(at,'从日历');redraw()},()=>{calOpen=false;const f=calNext;calNext=null;if(f)f()})};
 if($('#ieLook',sh))$('#ieLook',sh).onclick=()=>{buzz();if(IN_APP)NN({cmd:'openapp',url:c.link}).then(r=>{if(r===false)toast('打不开这个链接','gray')}).catch(()=>toast('打不开这个链接','gray'));else window.open(c.link,'_blank')};
 const useClip=async()=>{buzz();try{const v=IN_APP?await navigator.clipboard.readText():'https://m.damai.cn/shows/item.html?itemId=0';clipHas=false;if(!v){toast('没读到剪贴板，可以长按输入框粘贴','gray');redraw();return}useLink(v);redraw()}catch(e){toast('没能读取剪贴板，可以长按输入框粘贴','gray')}};
 if($('#ieClip',sh))$('#ieClip',sh).onclick=useClip;
