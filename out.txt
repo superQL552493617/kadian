@@ -1,0 +1,121 @@
+app 6829678970
+appInfo 1aa812a5-767f-4e5a-8e64-a83c7fea26d2 WAITING_FOR_REVIEW FOUR_PLUS
+== appInfoLoc zh-Hans
+{
+ "locale": "zh-Hans",
+ "name": "准点时钟",
+ "subtitle": "毫秒对时，抢票卡点不慌",
+ "privacyPolicyUrl": "https://superql552493617.github.io/kadian/privacy.html",
+ "privacyChoicesUrl": null,
+ "privacyPolicyText": null
+}
+== appInfoLoc zh-Hant
+{
+ "locale": "zh-Hant",
+ "name": "準點時鐘",
+ "subtitle": "毫秒對時，搶票卡點不慌",
+ "privacyPolicyUrl": "https://superql552493617.github.io/kadian/zh-Hant/privacy.html",
+ "privacyChoicesUrl": null,
+ "privacyPolicyText": null
+}
+== appInfoLoc en-US
+{
+ "locale": "en-US",
+ "name": "OnTime Clock: Sale Countdown",
+ "subtitle": "See the exact sale time",
+ "privacyPolicyUrl": "https://superql552493617.github.io/kadian/en/privacy.html",
+ "privacyChoicesUrl": null,
+ "privacyPolicyText": null
+}
+primaryCategory UTILITIES
+secondaryCategory None
+== ageRating
+{
+ "advertising": false,
+ "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+ "contests": "NONE",
+ "gambling": false,
+ "gamblingSimulated": "NONE",
+ "gunsOrOtherWeapons": "NONE",
+ "healthOrWellnessTopics": false,
+ "kidsAgeBand": null,
+ "lootBox": false,
+ "medicalOrTreatmentInformation": "NONE",
+ "messagingAndChat": false,
+ "parentalControls": false,
+ "profanityOrCrudeHumor": "NONE",
+ "ageAssurance": false,
+ "sexualContentGraphicAndNudity": "NONE",
+ "sexualContentOrNudity": "NONE",
+ "socialMedia": false,
+ "socialMediaAgeRestricted": false,
+ "horrorOrFearThemes": "NONE",
+ "matureOrSuggestiveThemes": "NONE",
+ "unrestrictedWebAccess": false,
+ "userGeneratedContent": false,
+ "violenceCartoonOrFantasy": "NONE",
+ "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+ "violenceRealistic": "NONE",
+ "ageRatingOverride": "NONE",
+ "ageRatingOverrideV2": "NONE",
+ "koreaAgeRatingOverride": "NONE",
+ "gracRatingClassificationNumber": null,
+ "developerAgeRatingInfoUrl": null
+}
+version 6c11b169-2d0f-4d64-bb8e-83514593cf64 1.0.0 WAITING_FOR_REVIEW IOS release: AFTER_APPROVAL
+== verLoc en-US
+{
+ "description": "OnTime Clock helps you see the exact time before a sale starts. Add a sale and it counts down using the time of the platform you chose. Switch to the shopping app and keep watching in the floating window. No sign-up needed.\n\nHOW IT WORKS\n1. Paste a sale link or scan a QR code. If a title and start time can be read, you confirm them before they are filled in. If not, enter them by hand or add from your calendar.\n2. Tap \"Floating window\" on the sale's card and switch to the shopping app.\n3. Get a reminder before the start, watch the clock and place your order yourself.\n\nFEATURES\n- Time sync: each sale syncs with the public time of the platform you chose. If it can't sync, the card tells you it is using your phone's time.\n- Manual adjustment: per sale, in 0.5 second steps.\n- Floating window: 3 shapes, 6 color styles, optional milliseconds. The last seconds change color without flashing. Your music keeps playing. Position and size are controlled by the system.\n- Dynamic Island and Lock Screen: the next sale's countdown appears once you have opened the app within 8 hours of the start.\n- Reminders: choose how early to be reminded, and pick an alarm tone that also rings on the Lock Screen and in the background.\n- Several sales at once: same-size cards, cleared from the list once a sale starts.\n- Jump to app: open the platform from any sale with a link.\n- Home Screen widget: the next sale's countdown.\n\nGOOD TO KNOW\n- OnTime Clock only shows the time. It doesn't buy for you, simulate taps or touch your platform accounts, and it can't guarantee a purchase.\n- Some platforms only publish time to the second.\n- A start time read from a link may be wrong. Check it against the platform before filling it in.\n- Your sales and settings stay on your phone.\n\nMEMBERSHIP\nBasic features are free, with up to 3 sales at a time. Members get an ad-free experience and unlimited sales.\n- Lifetime: one-time purchase, does not renew.\n- Quarterly: auto-renewing subscription, billed every 3 months. Payment is charged to your Apple Account at confirmation. It renews within 24 hours before the period ends unless turned off at least 24 hours before. Manage or cancel in Settings > Apple Account > Subscriptions.\n- On a new phone, tap \"Restore purchases\" on the membership page.\n- Terms of Use: https://superql552493617.github.io/kadian/en/terms.html\n- Privacy Policy: https://superql552493617.github.io/kadian/en/privacy.html",
+ "locale": "en-US",
+ "keywords": "ticket,sale,flash,countdown,floating,timer,sync,concert,dynamic island,alarm,reminder,beijing time",
+ "marketingUrl": "https://superql552493617.github.io/kadian/en/",
+ "promotionalText": "Paste a sale link, check the start time, then keep the countdown in view in a floating window. No sign-up needed.",
+ "supportUrl": "https://superql552493617.github.io/kadian/en/",
+ "whatsNew": null
+}
+  shots APP_IPHONE_67 4
+== verLoc zh-Hans
+{
+ "description": "准点时钟帮你在开抢前看准时间。添加一场抢购，它按这场所选平台的时间倒计时；切到抢购 App 后，用悬浮窗继续看着。不用注册登录，打开就能用。\n\n【怎么用】\n1. 粘贴抢购链接或扫二维码。读到标题和开抢时间时，先给你确认再填入；读不到就手动填，也可以从日历添加。\n2. 在这一场的卡片上点「开启悬浮窗」，切到抢购 App。\n3. 到点前收到提醒，看着时间，自己下单。\n\n【主要功能】\n· 对时：每一场按所选平台的公开时间对时；对不上时会写明现在按手机时间算。\n· 手动微调：每场单独调整，每次 0.5 秒。\n· 悬浮窗：3 种形状、6 种配色，毫秒位可选，最后几秒只变色不闪烁，不打断正在放的音乐。位置和大小由系统决定。\n· 灵动岛和锁屏：开抢前 8 小时内打开过准点时钟，就能看到最近一场的倒计时。\n· 提醒：可选提前多久提醒；可选一段通知闹钟铃声，锁屏和后台也会响。\n· 多场同时看：每场同样大小，到点自动收进「已结束」。\n· 跳到 App：有链接的场次，一键打开对应平台。\n· 桌面小组件：看下一场的倒计时。\n\n【先说清楚】\n· 准点时钟只帮你看时间，不代抢、不模拟点击、不碰你的平台账号，也不能保证抢到。\n· 部分平台公开的时间只精确到秒。\n· 读到的开抢时间可能不准，填入前请和平台核对。\n· 抢购日程和设置只保存在你的手机上。\n\n【会员说明】\n基础功能免费，最多同时 3 场。会员权益：全程无广告、不限场次。\n· 永久会员 ¥18：一次购买，不会自动续订。\n· 季度会员 ¥8 / 3 个月：自动续期订阅。确认购买时从 Apple 账户扣款；到期前 24 小时内自动续费，除非在到期前至少 24 小时关闭自动续订。可随时在「设置 → Apple 账户 → 订阅」中管理或取消。\n· 换手机后，在会员页点「恢复购买」。\n· 用户协议：https://superql552493617.github.io/kadian/terms.html\n· 隐私政策：https://superql552493617.github.io/kadian/privacy.html",
+ "locale": "zh-Hans",
+ "keywords": "抢票,抢购,秒杀,倒计时,悬浮,开售,对时,校时,演唱会,门票,灵动岛,提醒,闹钟,北京时间,限量,火车票,首发,放票",
+ "marketingUrl": "https://superql552493617.github.io/kadian/",
+ "promotionalText": "粘贴抢购链接，核对开抢时间；切到抢购 App，用悬浮窗盯着倒计时。不用注册登录，打开就能用。",
+ "supportUrl": "https://superql552493617.github.io/kadian/",
+ "whatsNew": null
+}
+  shots APP_IPHONE_67 4
+== verLoc zh-Hant
+{
+ "description": "準點時鐘幫你在開搶前看準時間。新增一場搶購，它按這場所選平台的時間倒計時；切到搶購 App 後，用懸浮窗繼續看著。不用註冊登入，開啟就能用。\n\n【怎麼用】\n1. 貼上搶購連結或掃二維碼。讀到標題和開搶時間時，先給你確認再填入；讀不到就手動填，也可以從日曆新增。\n2. 在這一場的卡片上點「開啟懸浮窗」，切到搶購 App。\n3. 到點前收到提醒，看著時間，自己下單。\n\n【主要功能】\n· 對時：每一場按所選平台的公開時間對時；對不上時會寫明現在按手機時間算。\n· 手動微調：每場單獨調整，每次 0.5 秒。\n· 懸浮窗：3 種形狀、6 種配色，毫秒位可選，最後幾秒只變色不閃爍，不打斷正在放的音樂。位置和大小由系統決定。\n· 靈動島和鎖屏：開搶前 8 小時內開啟過準點時鐘，就能看到最近一場的倒計時。\n· 提醒：可選提前多久提醒；可選一段通知鬧鐘鈴聲，鎖屏和後台也會響。\n· 多場同時看：每場同樣大小，到點自動收進「已結束」。\n· 跳到 App：有連結的場次，一鍵開啟對應平台。\n· 桌面小元件：看下一場的倒計時。\n\n【先說清楚】\n· 準點時鐘只幫你看時間，不代搶、不模擬點選、不碰你的平台帳號，也不能保證搶到。\n· 部分平台公開的時間只精確到秒。\n· 讀到的開搶時間可能不準，填入前請和平台核對。\n· 搶購日程和設定只儲存在你的手機上。\n\n【會員說明】\n基礎功能免費，最多同時 3 場。會員權益：全程無廣告、不限場次。\n· 永久會員 ¥18：一次購買，不會自動續訂。\n· 季度會員 ¥8 / 3 個月：自動續期訂閱。確認購買時從 Apple 帳戶扣款；到期前 24 小時內自動續費，除非在到期前至少 24 小時關閉自動續訂。可隨時在「設定 → Apple 帳戶 → 訂閱」中管理或取消。\n· 換手機後，在會員頁點「恢復購買」。\n· 使用者協議：https://superql552493617.github.io/kadian/zh-Hant/terms.html\n· 隱私政策：https://superql552493617.github.io/kadian/zh-Hant/privacy.html",
+ "locale": "zh-Hant",
+ "keywords": "搶票,搶購,秒殺,倒計時,懸浮,開售,對時,校時,演唱會,門票,靈動島,提醒,鬧鐘,北京時間,限量,火車票,首發,放票",
+ "marketingUrl": "https://superql552493617.github.io/kadian/zh-Hant/",
+ "promotionalText": "貼上搶購連結，核對開搶時間；切到搶購 App，用懸浮窗盯著倒計時。不用註冊登入，開啟就能用。",
+ "supportUrl": "https://superql552493617.github.io/kadian/zh-Hant/",
+ "whatsNew": null
+}
+  shots APP_IPHONE_67 4
+  build ('08750a33-3823-4472-8705-b40b41e69b57', '62')
+== reviewDetail
+{
+ "contactFirstName": "lang",
+ "contactLastName": "qin",
+ "demoAccountName": null,
+ "demoAccountPassword": null,
+ "demoAccountRequired": false,
+ "notes": "【English】\nOnTime Clock is a time utility for people waiting for a ticket or product sale to open. It shows a countdown based on the public time of the platform the user selects. It does not buy anything, simulate taps or access any platform account.\n\nNo login or demo account is needed. All user data stays on the device.\n\nHow to test:\n1. On first launch, agree to the Terms and Privacy Policy, then tap Skip on the guide.\n2. Tap + on the home screen, enter a name, pick a start time within the next 8 hours and save. A real link is not required.\n3. On the sale's card, tap \"Floating window\", then leave the app. The floating clock appears over other apps.\n4. To see Membership, tap the yellow \"Go Premium\" button next to the avatar on the Me tab, or try to add a 4th sale.\n\nIn-app purchases: Lifetime (one-time, CNY 18) and Quarterly (auto-renewing, CNY 8 per 3 months). Free users get all features with up to 3 sales at a time. Members get unlimited sales and the ad-free benefit. The app currently shows no ads to anyone; ads may be added to the free version later. \"Restore purchases\" is at the top right of the Membership page.\n\nPicture in Picture and background audio: the floating clock uses system Picture in Picture and renders the clock as video frames. It uses AVPictureInPictureVideoCallViewController so the system shows only the close and return buttons, without playback controls. This is not a real video call. It starts only when the user turns it on. The audio background mode and playback session (mixed with other audio) are used so countdown beeps can sound while the user is in another app, if they turn on Countdown sound. The app does not play continuous audio.\n\nReading a link: only when the user pastes or scans a link from a listed sale platform, the app opens that one public page in a hidden web view with no login and no saved cookies, reads the title and start time, and shows them for the user to confirm. It stops at captcha or login pages and the user enters the time manually.\n\nTime sync: reads only the current time from a public NTP service and public platform time endpoints. No user data is sent.\n\nPermissions, each requested only when the feature is used: Calendar (From calendar, reads upcoming events on the device for the user to pick), Camera (scan QR code, avatar photo), Photos (QR image, avatar), Notifications (sale reminders and alarm tones). Live Activities show the countdown on Dynamic Island and the Lock Screen.\n\nFeedback uses a Tencent Questionnaire web form, which receives a random user ID, membership type and app version when opened.\n\n【中文】\n准点时钟是抢票、抢购用的时间工具，按用户选的平台公开时间显示倒计时。不代抢、不模拟点击、不访问任何平台账号。不需要登录，也不需要演示账号，数据只保存在手机上。\n\n测试方法：首次打开同意协议，引导点「跳过」；点首页「+」，填名称和 8 小时内的开抢时间并保存，不需要真实链接；点卡片上的「开启悬浮窗」后退出 App，悬浮时钟显示在其他 App 上方。\n\n会员入口：「我的」头像右侧的黄色按钮，或添加第 4 场时弹出。永久会员 18 元（一次购买），季度会员 8 元（每 3 个月自动续订）。免费用户可用全部功能，最多同时 3 场；会员不限场次，并享全程无广告。App 现在对所有人都不显示广告，以后免费版可能接入广告。恢复购买在会员页右上角。\n\n悬浮窗使用系统画中画，把时钟画成视频帧；使用通话式画中画接口是为了只显示关闭和回到 App 两个按钮，并不是真实通话，只在用户开启时启动。后台音频用于用户打开「倒计时声音」后，在其他 App 里也能响提示音，和其他音频混合，不持续播放音频。\n\n读链接：只在用户粘贴或扫码时，用隐藏网页打开这一个公开页面，不登录、不留 Cookie，读到标题和开抢时间后先让用户确认；遇到验证码或登录页就放弃，由用户手填。权限（日历、相机、相册、通知）都只在用到时申请。"
+}
+build 08750a33-3823-4472-8705-b40b41e69b57 62 VALID False False
+build 9b3f6238-3da6-455e-9fe5-aa526aba75b9 61 VALID False False
+build d183117e-a66e-488c-b2c6-a1f0923e9275 60 VALID False False
+build f518132f-7528-4b05-8968-0364c381974e 59 VALID False False
+build 7a0a837d-32a8-4790-909e-6626788a9537 58 VALID False False
+availability {'availableInNewTerritories': False}
+territories available: 1 ['CHN']
+priceSchedule 6829678970 ['territories:CHN', 'appPrices:eyJzIjoiNjgyOTY3ODk3MCIsInQiOiJDSE4iLCJwIjoiMTAwMDAiLCJzZCI6MC4wLCJlZCI6MC4wfQ']
+subGroup 会员 locs ['en-US:PREPARE_FOR_SUBMISSION', 'zh-Hans:PREPARE_FOR_SUBMISSION', 'zh-Hant:PREPARE_FOR_SUBMISSION']
+  sub site.xiaomanhabit.kadian.vip.quarter WAITING_FOR_REVIEW
+iap site.xiaomanhabit.kadian.vip.life WAITING_FOR_REVIEW
+reviewSubmission 2d5daf15-1306-4b52-ad1c-ea24c57d1ce4 WAITING_FOR_REVIEW IOS
+reviewSubmission 83cd60c1-9499-4565-a8df-3769727e2dba COMPLETE IOS
