@@ -1,0 +1,21 @@
+App ID: 6829678970
+SUB site.xiaomanhabit.kadian.vip.quarter {'state': 'READY_TO_SUBMIT', 'reviewNote': '会员权益：全程无广告、不限场次。免费用户可用对时、倒计时、悬浮窗（全部配色和形状）、灵动岛和提醒，最多同时 3 场。', 'familySharable': False, 'groupLevel': 1}
+ shot {'errors': None, 'warnings': None, 'state': 'COMPLETE'}
+ availability {'availableInNewTerritories': True}
+ locs [('en-US', 'PREPARE_FOR_SUBMISSION'), ('zh-Hans', 'PREPARE_FOR_SUBMISSION'), ('zh-Hant', 'PREPARE_FOR_SUBMISSION')]
+IAP site.xiaomanhabit.kadian.vip.life {'state': 'READY_TO_SUBMIT', 'reviewNote': '会员权益：全程无广告、不限场次。免费用户可用对时、倒计时、悬浮窗（全部配色和形状）、灵动岛和提醒，最多同时 3 场。', 'familySharable': False}
+ shot {'errors': None, 'warnings': None, 'state': 'COMPLETE'}
+ availability {'availableInNewTerritories': True}
+ priceSchedule 6830094129
+ locs [('en-US', 'PREPARE_FOR_SUBMISSION'), ('zh-Hans', 'PREPARE_FOR_SUBMISSION'), ('zh-Hant', 'PREPARE_FOR_SUBMISSION')]
+== 订阅群组
+ - 会员 (22540240)
+   · site.xiaomanhabit.kadian.vip.quarter 季度会员 THREE_MONTHS 状态=READY_TO_SUBMIT
+     价格 CHN: 8.0
+     价格 USA: 0.99
+     已设价格的地区数：175
+== App 内购买项目
+ - site.xiaomanhabit.kadian.vip.life 永久会员 NON_CONSUMABLE 状态=READY_TO_SUBMIT
+✗ site.xiaomanhabit.kadian.vip.year
+✓ site.xiaomanhabit.kadian.vip.quarter
+✓ site.xiaomanhabit.kadian.vip.life
