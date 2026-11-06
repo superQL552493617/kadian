@@ -336,6 +336,20 @@ if MODE.startswith("attach"):
         r = api("PATCH", f"/v1/appStoreVersions/{ver['id']}/relationships/build", {"data": {"type": "builds", "id": ok[0]["id"]}})
         print("ATTACHED", ok[0]["attributes"]["version"], r is not None)
 
+if MODE == "additem":
+    # 只把当前版本加进网页建的草稿，不提交（网页版本页加不进去时用，卡点 KD-007）
+    aid = app_id(); ver, _ = version_and_loc(aid)
+    print("version", ver["id"], ver["attributes"]["versionString"], ver["attributes"].get("appStoreState"))
+    subs, _ = all_pages(f"/v1/apps/{aid}/reviewSubmissions")
+    rs = next((x for x in subs if x["attributes"].get("state") == "READY_FOR_REVIEW"), None)
+    if not rs:
+        print("no draft")
+    else:
+        r = api("POST", "/v1/reviewSubmissionItems", {"data": {"type": "reviewSubmissionItems", "relationships": {
+            "reviewSubmission": rel("reviewSubmissions", rs["id"]), "appStoreVersion": rel("appStoreVersions", ver["id"])}}})
+        print("ITEM ADDED" if r else "item failed", rs["id"])
+    MODE = "draft"
+
 if MODE.startswith("draft"):
     aid = app_id()
     subs, _ = all_pages(f"/v1/apps/{aid}/reviewSubmissions")
