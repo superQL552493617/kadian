@@ -12657,7 +12657,7 @@ const {sh,close}=openSheet(`
 <div class="li"><span class="t">数据归你<small>只保存在你的手机上，删除 App 时一起删除</small></span></div>
 <div class="li"><span class="t">图标来源<small>部分图标来自 OpenMoji，CC BY-SA 4.0</small></span></div>
 </div>
-${ICP_NO?`<a class="me-icp" style="margin-top:18px" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">${ICP_NO}</a>`:''}`);
+${ICP_NO?`<div class="me-icp" style="margin-top:18px">${ICP_NO}</div>`:''}`);
 $('#abX',sh).onclick=close;
 }
 
@@ -12728,7 +12728,7 @@ ${swHTML('ms-'+id,m.on,n)}<span class="ms-h" aria-label="拖动排序">${mi('gri
 <div class="li ms-row fixed"><span class="row-ic">${mi('modules',20,2)}</span><span class="t">模块设置<small>始终显示，方便找回隐藏的模块</small></span></div>
 </div>
 <button class="btn sec" id="msReset" style="margin-top:14px">恢复默认顺序</button>
-<a class="me-icp" style="margin:28px auto 8px" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">${ICP_NO}</a>`;
+<div class="me-icp" style="margin:28px auto 8px">${ICP_NO}</div>`;
 backToMe();
 const store=()=>{S.prefs.modules=$$('#msList .ms-row[data-id]').map(r=>({id:r.dataset.id,on:!r.classList.contains('off')}));save()};
 $$('#msList .ms-row[data-id]').forEach(r=>{
@@ -14148,7 +14148,7 @@ ${SUB_ENTRY?(()=>{const plan=planOf();return `<button class="me-vip${plan!=='fre
 <div class="me-grid">${ME_TILES.map(([id,ic,name])=>`<button class="me-tile" data-go="${id}"><span class="me-tic">${artSVG(id)||mi(ic)}</span><span>${name}</span></button>`).join('')}</div>
 <p class="me-legal"><button id="meTerms">用户协议</button><i>·</i><button id="mePriv">隐私政策</button></p>
 ${IN_APP?`<button class="me-ver" id="meVer">当前版本 V${NV.v}${NV.b?`（${NV.b}）`:''}<b>检查更新</b></button>`:'<p class="me-ver">网页预览</p>'}
-${ICP_NO?`<a class="me-icp" data-nt href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">${esc(ICP_NO)}</a>`:''}`;
+${ICP_NO?`<div class="me-icp" data-nt>${esc(ICP_NO)}</div>`:''}`;
 $('#meSet').onclick=openSettingsSheet;$('#meAva').onclick=openAccount;$('#meVip')&&($('#meVip').onclick=openVip);
 $('#meTerms').onclick=()=>openDoc('terms');$('#mePriv').onclick=()=>openDoc('privacy');
 $('#meVer')&&($('#meVer').onclick=()=>checkUpdate());
