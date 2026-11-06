@@ -105,11 +105,6 @@ struct WebRootView: View {
         } else { pendingRoute = r }
     }
 
-    // 网页准备好以后，开屏再多停 1 秒（老板 2026-11-04）；点一下屏幕可以马上跳过
-    private func endSplashLater() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { endSplash() }
-    }
-
     private func endSplash() {
         guard !splashGone else { return }
         splashGone = true
@@ -122,17 +117,19 @@ struct WebRootView: View {
             .ignoresSafeArea()
             .background(Color(UIColor.systemBackground).ignoresSafeArea())
             .overlay {
+                // 开屏页：只在冷启动时出现，从后台切回不会再出现
+                // 至少显示 1.2 秒，同时等网页准备好；准备好以后点一下可以提前跳过（照小满记，老板 2026-11-05）
                 if !splashGone {
                     SplashView().contentShape(Rectangle())
                         .onTapGesture { if bridge.ready { endSplash() } }
                         .transition(.opacity)
                 }
             }
-            .animation(.easeOut(duration: 0.15), value: splashGone)
+            .animation(.easeOut(duration: 0.4), value: splashGone)
             .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { minShown = true; if bridge.ready { endSplashLater() } }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { minShown = true; if bridge.ready { endSplash() } }
             }
-            .onChange(of: bridge.ready) { _, r in if r && minShown { endSplashLater() } }
+            .onChange(of: bridge.ready) { _, r in if r && minShown { endSplash() } }
             // <scheme>://<页面>，比如 starter://note（小组件用）
             .onOpenURL { url in if let h = url.host, !h.isEmpty { route(h) } }
             .onReceive(NotificationCenter.default.publisher(for: .openRoute)) { _ in

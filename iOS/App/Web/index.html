@@ -12756,10 +12756,10 @@ function needConsent(){return IN_APP&&S.prefs.agreed!==POLICY_VER}
 function showConsent(){if(!needConsent()||document.querySelector('.pc'))return;
 const ov=document.createElement('div');ov.className='pc';ov.setAttribute('role','dialog');ov.setAttribute('aria-label','用户协议和隐私政策');
 const main=`<div class="pc-card"><b class="pc-t">${T('欢迎使用')}${appName()}</b>
-<p>在开始之前，请花一分钟阅读<button class="pc-l" data-d="terms">《用户协议》</button>和<button class="pc-l" data-d="privacy">《隐私政策》</button>。</p>
+<p>在开始之前，请花一分钟阅读<button class="pc-l" data-d="terms">《用户协议》</button>和<button class="pc-l" data-d="privacy">《隐私政策》</button>${LANG==='en'?'.':'。'}</p>
 <p class="pc-s">· 不用注册登录，你的抢购日程都只保存在这台手机上<br>· 相册、相机、日历、通知只在你用到相关功能时才会请求<br>· 对时和读取你粘贴的链接需要联网；我们没有服务器，不收集、不上传你的个人数据</p>
 <button class="pc-ok">同意并继续</button><button class="pc-no">不同意</button></div>`;
-const no=`<div class="pc-card"><b class="pc-t">需要你的同意</b><p>${appName()}${T('需要你同意《用户协议》和《隐私政策》后才能使用。')}如果不同意，可以直接退出 App，我们不会保存任何信息。</p>
+const no=`<div class="pc-card"><b class="pc-t">需要你的同意</b><p>${appName()}${T('需要你同意《用户协议》和《隐私政策》后才能使用。')}${LANG==='en'?' ':''}如果不同意，可以直接退出 App，我们不会保存任何信息。</p>
 <button class="pc-ok" id="pcBack">再看看</button></div>`;
 const bind=()=>{$$('.pc-l',ov).forEach(b=>b.onclick=()=>openDoc(b.dataset.d));
 $('.pc-ok',ov).onclick=()=>{if($('#pcBack',ov)){ov.innerHTML=main;bind();return}S.prefs.agreed=POLICY_VER;saveNow();buzz();ov.classList.remove('show');setTimeout(()=>ov.remove(),dur(260))};
@@ -13955,7 +13955,7 @@ const r=openAlert(`<h3>读到 ${cands.length} 个场次</h3>${nm?`<p class="kd-l
 let once=false;$$('[data-ci]',r.al).forEach(b=>b.onclick=()=>{if(once)return;once=true;buzz();r.close();resAl=null;const x=cands[+b.dataset.ci];if(nm&&!nameTouched)c.name=nm;note='';noteWarn=false;linkMiss=false;fillTime(x.t,'从链接');redraw()});
 $('#lrNo',r.al).onclick=()=>{if(once)return;once=true;r.close();resAl=null;if(nm&&!nameTouched)c.name=nm;linkMiss=true;note='可以手动填开抢时间，或者点「从日历添加」。';noteWarn=false;redraw()}};
 /* 换链接：上一条自动带出的名称、时间、平台先清掉，再按新链接读；手动填过的不动 */
-const useLink=v=>{const raw=v.trim(),url=normUrl(raw);if(raw&&raw===c.link)return;
+const useLink=(v,viaBlur)=>{const raw=v.trim(),url=normUrl(raw);if(raw&&raw===c.link)return;
 const my=++seq,prev=c.link;note='';noteWarn=false;linkMiss=false;if(resAl){resAl.close();resAl=null}
 if(!nameTouched)c.name='';if(!timeTouched)c.at=null;
 const s=detectSrc(raw);if(s){if(s!==c.src){c.src=s;srcAuto=true;toast(`已识别为${SRC(s).name}`)}}else{if(srcAuto){c.src=baseSrc;srcAuto=false}if(url)toast('没认出是哪个平台，请手动选','gray')}
@@ -13970,8 +13970,10 @@ offAuto();
 if(!url)return;
 const hadText=(tt||nameTouched)&&(at||timeTouched);if(hadText||!url){offerResult(tt,at,'从分享文字');return}
 const kept=note,keptW=noteWarn;note='正在读取标题和开抢时间…';noteWarn=false;
-/* 识别期间盖一层提示，挡住其他点击（老板 2026-11-04） */
-const wait=openAlert(`<div class="up-spin"><i></i></div><h3>正在识别，请稍候…</h3><p>正在读取标题和开抢时间，一般几秒钟</p>`,'neutral cf');
+/* 识别期间盖一层提示，挡住其他点击（老板 2026-11-04）。手输链接后点别处时，这一下要先生效：等手指抬起、点击送达再盖（Q37） */
+let waitAl=null,waitEnd=false;const showWait=()=>{if(waitEnd||my!==seq||!sh.isConnected||(viaBlur&&!sh.classList.contains('show')))return;waitAl=openAlert(`<div class="up-spin"><i></i></div><h3>正在识别，请稍候…</h3><p>正在读取标题和开抢时间，一般几秒钟</p>`,'neutral cf')};
+const wait={close(){waitEnd=true;waitAl&&waitAl.close()}};
+if(viaBlur){const tick=()=>{if(down){setTimeout(tick,60);return}showWait()};setTimeout(tick,120)}else showWait();
 fetchLinkInfo(url).then(r=>{wait.close();if(my!==seq||!sh.isConnected)return;note=kept;noteWarn=keptW;
 const atV=at||(typeof r.at==='number'?r.at:null),how=at?'从分享文字':'从链接',many=!at&&!timeTouched&&r.cands&&r.cands.length>1;linkMiss=atV==null&&!many;
 if(many){redraw();offerChoice(tt||r.title,r.cands);return}
@@ -13992,7 +13994,7 @@ if(c.at<Date.now()){plainConfirm('开抢时间已经过了','确定要保存吗�
 const bind=()=>{
 $('#ieX',sh).onclick=close;
 $('#ieName',sh).oninput=e=>{c.name=e.target.value;nameTouched=!!e.target.value};
-$('#ieLink',sh).onchange=e=>{useLink(e.target.value);e.target.value=c.link;holdRedraw()};
+$('#ieLink',sh).onchange=e=>{useLink(e.target.value,true);e.target.value=c.link;holdRedraw()};
 $('#ieLink',sh).onpaste=()=>setTimeout(()=>{const el=$('#ieLink',sh);if(el&&el.value.trim()){useLink(el.value);el.value=c.link;redraw()}},0);
 if($('#ieCal',sh))$('#ieCal',sh).onclick=()=>{buzz();pickFromCalendar(c.name,at=>{fillTime(at,'从日历');redraw()})};
 if($('#ieLook',sh))$('#ieLook',sh).onclick=()=>{buzz();if(IN_APP)NN({cmd:'openapp',url:c.link}).then(r=>{if(r===false)toast('打不开这个链接','gray')}).catch(()=>toast('打不开这个链接','gray'));else window.open(c.link,'_blank')};
@@ -14144,7 +14146,7 @@ ${SUB_ENTRY?(()=>{const plan=planOf();return `<button class="me-vip${plan!=='fre
 <div class="me-grid">${ME_TILES.map(([id,ic,name])=>`<button class="me-tile" data-go="${id}"><span class="me-tic">${artSVG(id)||mi(ic)}</span><span>${name}</span></button>`).join('')}</div>
 <p class="me-legal"><button id="meTerms">用户协议</button><i>·</i><button id="mePriv">隐私政策</button></p>
 ${IN_APP?`<button class="me-ver" id="meVer">当前版本 V${NV.v}${NV.b?`（${NV.b}）`:''}<b>检查更新</b></button>`:'<p class="me-ver">网页预览</p>'}
-${ICP_NO&&LANG==='zh-Hans'?`<p class="me-icp">${esc(ICP_NO)}</p>`:''}`;
+${ICP_NO?`<a class="me-icp" data-nt href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">${esc(ICP_NO)}</a>`:''}`;
 $('#meSet').onclick=openSettingsSheet;$('#meAva').onclick=openAccount;$('#meVip')&&($('#meVip').onclick=openVip);
 $('#meTerms').onclick=()=>openDoc('terms');$('#mePriv').onclick=()=>openDoc('privacy');
 $('#meVer')&&($('#meVer').onclick=()=>checkUpdate());
