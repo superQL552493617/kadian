@@ -274,7 +274,7 @@ def submit():
     first = not any(v["attributes"].get("appStoreState") in ("READY_FOR_SALE", "PROCESSING_FOR_APP_STORE", "PENDING_DEVELOPER_RELEASE", "PENDING_APPLE_RELEASE", "REPLACED_WITH_NEW_VERSION", "DEVELOPER_REMOVED_FROM_SALE", "REMOVED_FROM_SALE") for v in vers)
     pending = pending_products(aid)
     if first and pending and "iap-added" not in MODE:
-        print("STOP 没有提交：这是第一个版本，下面的商品要先在网页版本页「App 内购买项目和订阅」里选中。老板确认后写 submit iap-added")
+        print("STOP 没有提交：这是第一个版本，商品要一起送审。有订阅时走网页草稿：网页把商品和订阅组加进草稿，写 additem 加版本，网页点提交，再用 status 核对。只有一次性商品时，版本页选中后写 submit iap-added")
         for x in pending: print("STOP", x[2])
         return
     bl, _ = all_pages("/v1/builds", {"filter[app]": aid, "sort": "-uploadedDate", "limit": 5, "filter[processingState]": "VALID"})
