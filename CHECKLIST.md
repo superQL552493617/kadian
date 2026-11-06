@@ -3,7 +3,7 @@
 ## 一定会被拒的
 - [ ] 隐私政策、支持网址能打开（返回 200）。GitHub Pages 要先开启；私有仓库的 Pages 免费账号用不了，所以网页放在 `xxx.github.io` 公开仓库里。
 - [ ] 只支持 iPhone：`TARGETED_DEVICE_FAMILY "1"`（模板已设好），否则会要求 iPad 截图。
-- [ ] 第一次提交内购 / 订阅：要在 App Store Connect 网页上，把商品加到这个版本里一起送审（API 做不了）。
+- [ ] 第一次提交内购 / 订阅：要在 App Store Connect 网页上，把商品加到这个版本里一起送审（API 做不了）。做完写 `submit iap-added`；日志有 `IAP-MISSING` 就是漏了，要撤回重提。
 - [ ] 商店截图 6.9 英寸 1320×2868（模拟器截图用 Pro Max，`ci/shots_max.txt` 存在即可）。
 - [ ] 审核备注写清楚：会员解锁什么、入口在哪、首次打开的同意弹窗和新手引导可以跳过（`app.json` → `reviewNotes`）。
 - [ ] 审核联系人：加密在 `ci/review_contact.enc`，不要明文提交。

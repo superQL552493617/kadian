@@ -255,24 +255,39 @@ def review_detail():
             "relationships": {"appStoreVersion": rel("appStoreVersions", ver["id"])}}})
     print("review detail", "ok" if r else "failed")
 
-def submit():
-    aid = app_id(); ver, _ = version_and_loc(aid)
-    bl, _ = all_pages("/v1/builds", {"filter[app]": aid, "sort": "-uploadedDate", "limit": 5, "filter[processingState]": "VALID"})
-    if bl:
-        api("PATCH", f"/v1/appStoreVersions/{ver['id']}/relationships/build", {"data": {"type": "builds", "id": bl[0]["id"]}}) and print("ok build", bl[0]["attributes"]["version"])
-    # 第一次的会员商品要和这个版本一起送审
+def pending_products(aid):
+    """还是 READY_TO_SUBMIT 的会员商品：[(类型, id, 商品 ID)]"""
+    out = []
     grps, _ = all_pages(f"/v1/apps/{aid}/subscriptionGroups")
     for g in grps:
         subs, _ = all_pages(f"/v1/subscriptionGroups/{g['id']}/subscriptions")
-        for sb in subs:
-            if sb["attributes"].get("state") == "READY_TO_SUBMIT":
-                r = api("POST", "/v1/subscriptionSubmissions", {"data": {"type": "subscriptionSubmissions", "relationships": {"subscription": rel("subscriptions", sb["id"])}}})
-                print("sub submit", sb["attributes"]["productId"], "ok" if r else "failed")
+        out += [("sub", x["id"], x["attributes"].get("productId")) for x in subs if x["attributes"].get("state") == "READY_TO_SUBMIT"]
     iaps, _ = all_pages(f"/v1/apps/{aid}/inAppPurchasesV2")
-    for p in iaps:
-        if p["attributes"].get("state") == "READY_TO_SUBMIT":
-            r = api("POST", "/v1/inAppPurchaseSubmissions", {"data": {"type": "inAppPurchaseSubmissions", "relationships": {"inAppPurchaseV2": rel("inAppPurchases", p["id"])}}})
-            print("iap submit", p["attributes"]["productId"], "ok" if r else "failed")
+    out += [("iap", x["id"], x["attributes"].get("productId")) for x in iaps if x["attributes"].get("state") == "READY_TO_SUBMIT"]
+    return out
+
+def submit():
+    aid = app_id(); ver, _ = version_and_loc(aid)
+    # 首个会员商品只能在网页上加到版本里一起送审，接口查不到加了没有。
+    # 所以先停下，老板确认加好后写 submit iap-added；提交后再核对商品状态，避免漏送（卡点 KD-007）
+    vers, _ = all_pages(f"/v1/apps/{aid}/appStoreVersions")
+    first = not any(v["attributes"].get("appStoreState") in ("READY_FOR_SALE", "PROCESSING_FOR_APP_STORE", "PENDING_DEVELOPER_RELEASE", "PENDING_APPLE_RELEASE", "REPLACED_WITH_NEW_VERSION", "DEVELOPER_REMOVED_FROM_SALE", "REMOVED_FROM_SALE") for v in vers)
+    pending = pending_products(aid)
+    if first and pending and "iap-added" not in MODE:
+        print("STOP 没有提交：这是第一个版本，下面的商品要先在网页版本页「App 内购买项目和订阅」里选中。老板确认后写 submit iap-added")
+        for x in pending: print("STOP", x[2])
+        return
+    bl, _ = all_pages("/v1/builds", {"filter[app]": aid, "sort": "-uploadedDate", "limit": 5, "filter[processingState]": "VALID"})
+    if bl:
+        api("PATCH", f"/v1/appStoreVersions/{ver['id']}/relationships/build", {"data": {"type": "builds", "id": bl[0]["id"]}}) and print("ok build", bl[0]["attributes"]["version"])
+    # 不是第一个版本的新商品可以用接口单独送审；第一个版本的接口一定退回，不调用
+    if not first:
+        for kind, pid, name in pending:
+            if kind == "sub":
+                r = api("POST", "/v1/subscriptionSubmissions", {"data": {"type": "subscriptionSubmissions", "relationships": {"subscription": rel("subscriptions", pid)}}})
+            else:
+                r = api("POST", "/v1/inAppPurchaseSubmissions", {"data": {"type": "inAppPurchaseSubmissions", "relationships": {"inAppPurchaseV2": rel("inAppPurchases", pid)}}})
+            print(kind, "submit", name, "ok" if r else "failed")
     subs, _ = all_pages(f"/v1/apps/{aid}/reviewSubmissions")
     rs = next((x for x in subs if x["attributes"].get("state") == "READY_FOR_REVIEW"), None)
     if not rs:
@@ -285,12 +300,19 @@ def submit():
             "reviewSubmission": rel("reviewSubmissions", rs["id"]), "appStoreVersion": rel("appStoreVersions", ver["id"])}}}) and print("item added")
     r = api("PATCH", f"/v1/reviewSubmissions/{rs['id']}", {"data": {"type": "reviewSubmissions", "id": rs["id"], "attributes": {"submitted": True}}})
     print("SUBMITTED" if r else "submit failed")
+    if r and pending:
+        time.sleep(60)
+        left = pending_products(aid)
+        if left:
+            print("IAP-MISSING 版本已提交，但这些商品还没送审，要撤回重提：", [x[2] for x in left])
+        else:
+            print("IAP-OK 商品都已送审")
 
 if MODE == "shots":
     upload_shots()
 if MODE == "review":
     review_detail()
-if MODE == "submit":
+if MODE.split()[0:1] == ["submit"]:
     submit(); status()
 
 if MODE == "canceldraft":
