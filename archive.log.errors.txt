@@ -1,0 +1,2 @@
+/Users/runner/work/kadian/kadian/iOS/App/LinkReader.swift:143:13: warning: initialization of immutable value 'ms' was never used; consider replacing with assignment to '_' or removing it
+/Users/runner/work/kadian/kadian/iOS/App/PipClock.swift:550:13: warning: initialization of immutable value 'ok' was never used; consider replacing with assignment to '_' or removing it
